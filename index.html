@@ -3,717 +3,2741 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>PlanBot – Simply Works</title>
+    <title>PlanBot - Local Planner</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
         :root {
-            --bg: #f1f5f9;
-            --card: white;
-            --text: #0f172a;
-            --border: #cbd5e1;
-            --primary: #1e293b;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --success: #10b981;
+            color-scheme: light;
+            --bg: #f4f7fb;
+            --surface: #ffffff;
+            --surface-alt: #eef3f8;
+            --text: #102033;
+            --muted: #5f6f84;
+            --border: #d4deea;
+            --primary: #1967d2;
+            --primary-soft: #dbe8ff;
+            --accent: #d97706;
+            --danger: #d14343;
+            --success: #168a5f;
+            --shadow: 0 18px 40px rgba(16, 32, 51, 0.08);
+            --radius: 8px;
+            --mobile-nav-height: 84px;
         }
-        .dark {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f1f5f9;
-            --border: #334155;
-            --primary: #38bdf8;
+
+        body.dark {
+            color-scheme: dark;
+            --bg: #111923;
+            --surface: #182331;
+            --surface-alt: #213043;
+            --text: #eef3fb;
+            --muted: #afbdd0;
+            --border: #304155;
+            --primary: #78aaf7;
+            --primary-soft: rgba(120, 170, 247, 0.18);
+            --accent: #f6b04d;
+            --danger: #ff7d7d;
+            --success: #56d0a3;
+            --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background: var(--bg);
-            padding: 16px;
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, var(--surface) 16%));
             color: var(--text);
-            transition: 0.2s;
+            min-height: 100dvh;
+            -webkit-tap-highlight-color: transparent;
+            padding:
+                max(12px, env(safe-area-inset-top))
+                max(12px, env(safe-area-inset-right))
+                calc(20px + env(safe-area-inset-bottom))
+                max(12px, env(safe-area-inset-left));
         }
-        .app {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--card);
-            border-radius: 2rem;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+            min-height: 48px;
         }
-        .header {
+
+        button {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
             background: var(--primary);
-            color: white;
-            padding: 1rem 1.5rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button.secondary {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        button.ghost {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.8rem 0.85rem;
+            font-size: 16px;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        .tab:focus-visible {
+            outline: none;
+            border-color: color-mix(in srgb, var(--primary) 42%, var(--border) 58%);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+        }
+
+        textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        label {
+            display: block;
+            font-size: 0.92rem;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .app {
+            max-width: 1240px;
+            margin: 0 auto;
+            background: color-mix(in srgb, var(--surface) 94%, transparent);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            min-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            gap: 1rem;
             flex-wrap: wrap;
-            gap: 10px;
+            padding: 1.4rem 1.5rem 1rem;
+            background:
+                linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--surface) 82%), transparent),
+                var(--surface);
+            border-bottom: 1px solid var(--border);
         }
-        .header h1 { font-size: 1.4rem; }
-        button, .btn {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 0.85rem;
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.55rem;
         }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
+
+        .brand p {
+            margin: 0.35rem 0 0;
+            color: var(--muted);
+            max-width: 58ch;
         }
-        .btn-danger { background: var(--danger); }
-        .tabs {
+
+        .header-actions {
             display: flex;
-            gap: 0;
-            background: var(--card);
+            gap: 0.65rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--surface-alt);
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .status-bar[data-kind="error"] {
+            color: var(--danger);
+        }
+
+        .status-bar[data-kind="success"] {
+            color: var(--success);
+        }
+
+        .tabs {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            gap: 0.35rem;
+            padding: 0.7rem 1rem;
+            background: color-mix(in srgb, var(--surface) 92%, var(--bg) 8%);
             border-bottom: 1px solid var(--border);
             overflow-x: auto;
+            scrollbar-width: none;
+            transition: transform 0.18s ease, opacity 0.18s ease;
         }
-        .tab {
-            padding: 0.8rem 1.2rem;
-            cursor: pointer;
-            font-weight: 600;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-        }
-        .tab.active {
-            border-bottom-color: var(--primary);
-            color: var(--primary);
-        }
-        .tab-content {
+
+        .tabs::-webkit-scrollbar {
             display: none;
-            padding: 1.5rem;
-            max-height: 70vh;
-            overflow-y: auto;
         }
-        .tab-content.active { display: block; }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-        .task-item, .goal-item {
-            background: var(--card);
-            border-left: 5px solid;
-            padding: 0.8rem;
-            margin-bottom: 8px;
-            border-radius: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .priority-high { border-left-color: var(--danger); }
-        .priority-med { border-left-color: var(--accent); }
-        .priority-low { border-left-color: var(--success); }
-        .completed { opacity: 0.6; text-decoration: line-through; }
-        .progress-bar {
-            height: 6px;
-            background: var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 6px 0;
-        }
-        .progress-fill { background: var(--success); height: 100%; }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 8px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--card);
-            color: var(--text);
-        }
-        .floating-chat {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            display: flex;
+
+        .tab {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            padding: 0.7rem 0.95rem;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid transparent;
+            border-radius: 999px;
+            min-height: 44px;
+            text-align: center;
+            line-height: 1.15;
         }
-        .chat-window {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 340px;
-            max-width: calc(100vw - 40px);
-            height: 460px;
-            background: var(--card);
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            z-index: 1001;
-            opacity: 0;
-            visibility: hidden;
-            transform: scale(0.9);
-            transition: 0.2s;
+
+        .tab.active {
+            background: var(--primary-soft);
+            color: var(--primary);
+            border-color: color-mix(in srgb, var(--primary) 24%, var(--border) 76%);
         }
-        .chat-window.open {
-            opacity: 1;
-            visibility: visible;
-            transform: scale(1);
+
+        .tab-content {
+            display: none;
+            padding: 1.3rem 1.5rem 1.6rem;
         }
-        .chat-header {
-            background: var(--primary);
-            color: white;
-            padding: 12px;
-            border-radius: 1.5rem 1.5rem 0 0;
+
+        .tab-content.active {
+            display: block;
+        }
+
+        main {
+            display: block;
+        }
+
+        .stack {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .panel h2,
+        .panel h3 {
+            margin: 0;
+            font-size: 1.04rem;
+        }
+
+        .section-head {
             display: flex;
             justify-content: space-between;
+            gap: 0.75rem;
+            align-items: flex-start;
+            margin-bottom: 0.9rem;
+            flex-wrap: wrap;
         }
-        .chat-messages {
+
+        .section-head > div:first-child {
+            min-width: 0;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .action-row,
+        .inline-controls {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .stats-grid,
+        .two-col,
+        .three-col,
+        .planner-layout,
+        .matrix-grid,
+        .field-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .two-col {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        .three-col {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .planner-layout {
+            grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+            align-items: start;
+        }
+
+        .matrix-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .field-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .due-grid {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+            align-items: end;
+        }
+
+        .due-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        .due-actions button {
+            min-width: 0;
+            white-space: nowrap;
+        }
+
+        .stat {
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .stat span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .stat strong {
+            font-size: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .task-list,
+        .goal-list,
+        .schedule-list,
+        .mini-list,
+        .matrix-list,
+        .command-feed {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .task-row,
+        .goal-row,
+        .schedule-row,
+        .matrix-box {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            padding: 0.9rem;
+        }
+
+        .task-row,
+        .goal-row,
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.9rem;
+            align-items: flex-start;
+        }
+
+        .priority-high {
+            border-left: 4px solid var(--danger);
+        }
+
+        .priority-med {
+            border-left: 4px solid var(--accent);
+        }
+
+        .priority-low {
+            border-left: 4px solid var(--success);
+        }
+
+        .task-main,
+        .goal-main,
+        .schedule-main {
+            min-width: 0;
             flex: 1;
+        }
+
+        .task-title,
+        .goal-title,
+        .schedule-title {
+            display: flex;
+            gap: 0.55rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.35rem;
+        }
+
+        .task-title strong,
+        .goal-title strong,
+        .schedule-title strong {
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .task-actions,
+        .schedule-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            min-width: 128px;
+        }
+
+        .task-meta,
+        .goal-meta,
+        .schedule-meta,
+        .settings-note {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.22rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            border: 1px solid var(--border);
+            background: var(--surface-alt);
+            color: var(--muted);
+        }
+
+        .badge.primary {
+            color: var(--primary);
+            background: var(--primary-soft);
+            border-color: color-mix(in srgb, var(--primary) 26%, var(--border) 74%);
+        }
+
+        .badge.warn {
+            color: var(--accent);
+        }
+
+        .badge.danger {
+            color: var(--danger);
+        }
+
+        .badge.success {
+            color: var(--success);
+        }
+
+        .completed {
+            opacity: 0.7;
+        }
+
+        .completed .task-title strong {
+            text-decoration: line-through;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            margin: 0.55rem 0 0.3rem;
+            border-radius: 999px;
+            background: var(--surface-alt);
+            overflow: hidden;
+        }
+
+        .progress > span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+
+        .check-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: var(--text);
+        }
+
+        .check-line input {
+            width: auto;
+            margin: 0;
+        }
+
+        .empty-state {
+            padding: 1rem;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+            background: color-mix(in srgb, var(--surface-alt) 80%, transparent);
+        }
+
+        .schedule-warning {
+            border: 1px dashed color-mix(in srgb, var(--accent) 48%, var(--border) 52%);
+            background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+            color: var(--text);
+            padding: 0.8rem 0.9rem;
+            border-radius: 12px;
+        }
+
+        .command-shell {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--surface);
+        }
+
+        .command-feed {
+            padding: 0.9rem;
+            max-height: 240px;
             overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background: color-mix(in srgb, var(--surface-alt) 76%, var(--surface) 24%);
         }
-        .message {
-            max-width: 85%;
-            padding: 6px 12px;
-            border-radius: 18px;
-            font-size: 0.85rem;
+
+        .command-message {
+            max-width: 90%;
+            padding: 0.7rem 0.85rem;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            line-height: 1.45;
         }
-        .user-msg {
+
+        .command-message.user {
+            margin-left: auto;
             background: var(--primary);
-            color: white;
-            align-self: flex-end;
+            color: #ffffff;
         }
-        .bot-msg {
-            background: var(--border);
-            align-self: flex-start;
+
+        .command-message.bot {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
         }
-        .chat-input-area {
-            display: flex;
-            padding: 10px;
-            gap: 8px;
+
+        .command-input-row {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding: 0.85rem;
             border-top: 1px solid var(--border);
         }
-        .pomodoro { font-size: 2rem; text-align: center; font-family: monospace; margin: 10px 0; }
-        .schedule-slot {
-            background: var(--border);
-            border-radius: 12px;
-            padding: 8px;
-            margin: 6px 0;
-            display: flex;
-            justify-content: space-between;
+
+        .focus-shell {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+            align-items: start;
         }
-        @media (max-width: 640px) {
-            .tab-content { padding: 1rem; }
+
+        .timer {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            line-height: 1.1;
+            margin: 0.5rem 0 0.9rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .matrix-box h3 {
+            margin: 0 0 0.6rem;
+            font-size: 1rem;
+        }
+
+        .matrix-list {
+            margin: 0;
+            padding-left: 1rem;
+        }
+
+        .matrix-list li {
+            margin-bottom: 0.45rem;
+            color: var(--muted);
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+            margin: 0.4rem 0;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 980px) {
+            .stats-grid,
+            .three-col,
+            .planner-layout,
+            .focus-shell,
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .two-col,
+            .matrix-grid,
+            .field-grid,
+            .due-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            body {
+                background: var(--bg);
+                padding:
+                    max(8px, env(safe-area-inset-top))
+                    max(8px, env(safe-area-inset-right))
+                    calc(14px + env(safe-area-inset-bottom))
+                    max(8px, env(safe-area-inset-left));
+            }
+
+            .app {
+                border-radius: 16px;
+                min-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            }
+
+            main {
+                padding-bottom: calc(var(--mobile-nav-height) + 18px + env(safe-area-inset-bottom));
+            }
+
+            .header,
+            .tab-content,
+            .status-bar {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .header {
+                gap: 0.8rem;
+                padding-bottom: 0.9rem;
+            }
+
+            .brand h1 {
+                font-size: 1.35rem;
+            }
+
+            .brand p {
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                overflow: hidden;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.35rem;
+                font-size: 0.88rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions button {
+                flex: 1 1 140px;
+            }
+
+            .tabs {
+                position: fixed;
+                top: auto;
+                left: max(8px, env(safe-area-inset-left));
+                right: max(8px, env(safe-area-inset-right));
+                bottom: max(8px, env(safe-area-inset-bottom));
+                padding: 0.45rem;
+                gap: 0.35rem;
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: var(--shadow);
+                backdrop-filter: blur(14px);
+                overflow: visible;
+            }
+
+            .tab {
+                flex: 1 1 0;
+                min-width: 0;
+                font-size: 0.78rem;
+                padding: 0.65rem 0.3rem;
+                border-radius: 12px;
+            }
+
+            .tab-content {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .panel {
+                padding: 0.9rem;
+            }
+
+            .section-head {
+                margin-bottom: 0.75rem;
+            }
+
+            .section-head .action-row,
+            .section-head .inline-controls,
+            .action-row,
+            .inline-controls {
+                width: 100%;
+            }
+
+            .action-row button,
+            .inline-controls button {
+                flex: 1 1 140px;
+            }
+
+            .task-row,
+            .goal-row,
+            .schedule-row {
+                flex-direction: column;
+            }
+
+            .task-actions,
+            .schedule-actions {
+                width: 100%;
+                justify-content: flex-start;
+                min-width: 0;
+            }
+
+            .command-input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .keyboard-open .tabs {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(calc(100% + 16px));
+            }
+
+            .keyboard-open main {
+                padding-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .header-actions button {
+                flex: 1 1 calc(50% - 0.4rem);
+            }
+
+            .tab {
+                padding: 0.7rem 0.8rem;
+            }
+
         }
     </style>
 </head>
 <body>
 <div class="app">
-    <div class="header">
-        <h1>🧠 PlanBot · Works 100%</h1>
-        <div><button id="darkToggle">🌓 Dark</button> <button id="exportData">📤 Export</button> <button id="importData">📥 Import</button></div>
-    </div>
-    <div class="tabs" id="tabs">
-        <div class="tab active" data-tab="today">📅 Today</div>
-        <div class="tab" data-tab="tasks">📋 Tasks & Goals</div>
-        <div class="tab" data-tab="matrix">📊 Eisenhower</div>
-        <div class="tab" data-tab="focus">🎯 Focus</div>
-        <div class="tab" data-tab="settings">⚙️ Settings</div>
-    </div>
-
-    <!-- Today Tab -->
-    <div id="todayTab" class="tab-content active">
-        <div class="card">
-            <div class="flex-between"><span>🧠 <strong>Insight</strong></span><span id="thinkerMsg"></span></div>
-            <div class="flex-between"><button id="autoPlan">✨ Auto-Plan</button><button id="genSchedule">⏰ Generate Schedule</button></div>
+    <header class="header">
+        <div class="brand">
+            <h1>PlanBot</h1>
         </div>
-        <div class="grid-2">
-            <div class="card"><h3>📌 Select tasks for today</h3><div id="todayTaskList"></div></div>
-            <div class="card"><h3>⏱️ Your schedule</h3><div id="scheduleList"></div></div>
+        <div class="header-actions">
+            <button id="darkToggle" class="secondary" type="button">Theme</button>
+            <button id="privacyToggle" class="secondary" type="button">Privacy off</button>
+            <button id="exportData" class="secondary" type="button">Export data</button>
+            <button id="importData" class="secondary" type="button">Import data</button>
         </div>
-        <div class="card"><h3>🔔 Reminders & Streak</h3><div id="reminderArea"></div><div id="streakArea"></div></div>
-        <div class="card"><h3>🏆 Goal progress</h3><div id="goalProgress"></div></div>
+    </header>
+
+    <div class="status-bar" id="statusBar" data-kind="quiet">
+        <span id="statusText">Ready</span>
     </div>
 
-    <!-- Tasks & Goals Tab -->
-    <div id="tasksTab" class="tab-content">
-        <div class="card"><h3>🎯 Goals <button id="clearGoals" class="btn-danger">Delete All</button></h3><div id="goalsContainer"></div></div>
-        <div class="card"><h3>📝 All Tasks <button id="clearTasks" class="btn-danger">Delete All</button></h3><div id="tasksContainer"></div></div>
-        <div class="card"><h3>➕ Add Task</h3><input id="taskTitle" placeholder="Title"><input id="taskTags" placeholder="#tag"><select id="taskPriority"><option value="high">High</option><option value="med">Medium</option><option value="low">Low</option></select><input id="taskEst" type="number" placeholder="Minutes" value="30"><input id="taskDue" type="datetime-local" placeholder="Due"><select id="taskRepeat"><option value="">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select><select id="taskGoalSelect"></select><button id="addTaskBtn">Create Task</button></div>
-        <div class="card"><h3>➕ Add Goal</h3><input id="goalName" placeholder="Goal name"><textarea id="goalDesc" placeholder="Description"></textarea><button id="addGoalBtn">Create Goal</button></div>
-        <div class="card"><h3>😊 Log mood (1-5)</h3><input id="moodVal" type="number" min="1" max="5"><button id="logMood">Log</button></div>
-    </div>
+    <nav class="tabs" id="tabs" aria-label="Planner sections">
+        <button class="tab active" type="button" data-tab="today">Today</button>
+        <button class="tab" type="button" data-tab="tasks">Tasks and goals</button>
+        <button class="tab" type="button" data-tab="matrix">Matrix</button>
+        <button class="tab" type="button" data-tab="focus">Focus</button>
+        <button class="tab" type="button" data-tab="settings">Settings</button>
+    </nav>
 
-    <!-- Eisenhower Matrix -->
-    <div id="matrixTab" class="tab-content"><div class="card"><h3>Eisenhower Matrix</h3><div id="matrixDisplay"></div></div></div>
+    <main>
+        <section id="todayTab" class="tab-content active">
+            <div class="stack">
+                <div class="panel">
+                    <div class="section-head">
+                        <div>
+                            <h2>Today plan</h2>
+                            <p class="muted" id="thinkerMsg"></p>
+                        </div>
+                        <div class="action-row">
+                            <button id="autoPlan" type="button">Auto-plan</button>
+                            <button id="genSchedule" class="secondary" type="button">Refresh schedule</button>
+                            <button id="clearSelection" class="ghost" type="button">Clear selection</button>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat"><span>Pending</span><strong id="pendingMetric">0</strong></div>
+                        <div class="stat"><span>Selected</span><strong id="selectedMetric">0</strong></div>
+                        <div class="stat"><span>Overdue</span><strong id="overdueMetric">0</strong></div>
+                        <div class="stat"><span>Streak</span><strong id="streakMetric">0</strong></div>
+                    </div>
+                </div>
 
-    <!-- Focus Mode -->
-    <div id="focusTab" class="tab-content">
-        <div class="card" style="text-align:center">
-            <h3>Focus Mode</h3>
-            <select id="focusTaskSelect"></select>
-            <button id="enterFocus">Enter Focus</button>
-            <div id="focusTimer" class="pomodoro">25:00</div>
-            <button id="startPomodoro">Start Pomodoro</button>
-            <button id="voiceDone">🎤 Say "done"</button>
-            <button id="exitFocus">Exit</button>
-        </div>
-    </div>
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="section-head">
+                            <h3>Select tasks for today</h3>
+                            <span class="muted" id="selectionInfo"></span>
+                        </div>
+                        <div id="todayTaskList" class="task-list"></div>
+                    </div>
 
-    <!-- Settings -->
-    <div id="settingsTab" class="tab-content">
-        <div class="card"><h3>Working hours</h3><input id="workStart" type="number" value="8"><input id="workEnd" type="number" value="21"><button id="saveHours">Save</button><hr><button id="resetAll" class="btn-danger">Reset All Data</button><button id="exportCal">📅 Export .ics</button></div>
-    </div>
-</div>
+                    <div class="panel">
+                        <div class="section-head">
+                            <h3>Your schedule</h3>
+                            <span class="muted" id="scheduleSummary"></span>
+                        </div>
+                        <div id="scheduleList" class="schedule-list"></div>
+                    </div>
+                </div>
 
-<div class="floating-chat" id="chatIcon">💬</div>
-<div class="chat-window" id="chatWin">
-    <div class="chat-header"><span>🤖 Chat</span><button id="closeChat">✕</button></div>
-    <div class="chat-messages" id="chatMsgs"><div class="message bot-msg">Hello! Commands:<br>• add task Buy milk high due tomorrow 3pm<br>• complete task Buy milk<br>• delete task milk<br>• plan my day<br>• show goals</div></div>
-    <div class="chat-input-area"><input id="chatInput" placeholder="Type..."><button id="sendChat">Send</button><button id="voiceChat">🎤</button></div>
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="section-head"><h3>Reminders and streak</h3></div>
+                        <div id="reminderArea" class="mini-list"></div>
+                        <div class="divider"></div>
+                        <div id="streakArea" class="settings-note"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head"><h3>Goal progress</h3></div>
+                        <div id="goalProgress" class="goal-list"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="section-head"><h3>Quick commands</h3></div>
+                    <div class="command-shell">
+                        <div class="command-feed" id="chatMsgs"></div>
+                        <div class="command-input-row">
+                            <div>
+                                <label for="chatInput" class="sr-only">Quick command input</label>
+                                <input id="chatInput" type="text" placeholder="add task Review roadmap high 45m due 2026-04-26 15:00">
+                            </div>
+                            <button id="sendChat" type="button">Run command</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tasksTab" class="tab-content">
+            <div class="planner-layout">
+                <div class="stack">
+                    <div class="panel">
+                        <div class="section-head"><h3>Add task</h3></div>
+                        <div class="stack">
+                            <div>
+                                <label for="taskTitle">Title</label>
+                                <input id="taskTitle" type="text" placeholder="What needs to happen?">
+                            </div>
+                            <div class="field-grid">
+                                <div>
+                                    <label for="taskPriority">Priority</label>
+                                    <select id="taskPriority">
+                                        <option value="high">High</option>
+                                        <option value="med" selected>Medium</option>
+                                        <option value="low">Low</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="taskEst">Minutes</label>
+                                    <input id="taskEst" type="number" min="5" max="480" value="30">
+                                </div>
+                            </div>
+                            <div class="field-grid due-grid">
+                                <div>
+                                    <label for="taskDate">Date</label>
+                                    <input id="taskDate" type="date">
+                                </div>
+                                <div>
+                                    <label for="taskTime">Time</label>
+                                    <input id="taskTime" type="time" step="300">
+                                </div>
+                                <div class="due-actions">
+                                    <button id="pickDateBtn" class="secondary" type="button">Calendar</button>
+                                    <button id="pickTimeBtn" class="secondary" type="button">Clock</button>
+                                </div>
+                            </div>
+                            <div class="field-grid">
+                                <div>
+                                    <label for="taskRepeat">Repeat</label>
+                                    <select id="taskRepeat">
+                                        <option value="">No repeat</option>
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="taskGoalSelect">Goal</label>
+                                    <select id="taskGoalSelect"></select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="taskTags">Tags</label>
+                                <input id="taskTags" type="text" placeholder="#design #ops">
+                            </div>
+                            <label class="check-line"><input id="taskPrivate" type="checkbox"> Mark this task as private</label>
+                            <button id="addTaskBtn" type="button">Create task</button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head"><h3>Add goal</h3></div>
+                        <div class="stack">
+                            <div>
+                                <label for="goalName">Goal name</label>
+                                <input id="goalName" type="text" placeholder="Name the outcome">
+                            </div>
+                            <div>
+                                <label for="goalDesc">Description</label>
+                                <textarea id="goalDesc" placeholder="Optional context"></textarea>
+                            </div>
+                            <label class="check-line"><input id="goalPrivate" type="checkbox"> Mark this goal as private</label>
+                            <button id="addGoalBtn" type="button">Create goal</button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head"><h3>Mood</h3></div>
+                        <div class="inline-controls">
+                            <div style="min-width: 120px; flex: 1 1 120px;">
+                                <label for="moodVal">Mood from 1 to 5</label>
+                                <input id="moodVal" type="number" min="1" max="5" inputmode="numeric">
+                            </div>
+                            <button id="logMood" type="button">Log mood</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="panel">
+                        <div class="section-head">
+                            <h3>Goals</h3>
+                            <button id="clearGoals" class="danger" type="button">Delete all goals</button>
+                        </div>
+                        <div id="goalsContainer" class="goal-list"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head">
+                            <h3>All tasks</h3>
+                            <div class="inline-controls">
+                                <select id="taskFilter" aria-label="Task filter">
+                                    <option value="all">All</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="private">Private</option>
+                                </select>
+                                <select id="taskSort" aria-label="Task sort">
+                                    <option value="urgency">Urgency</option>
+                                    <option value="soonest">Due soonest</option>
+                                    <option value="longest">Longest first</option>
+                                </select>
+                                <button id="clearTasks" class="danger" type="button">Delete all tasks</button>
+                            </div>
+                        </div>
+                        <div id="tasksContainer" class="task-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="matrixTab" class="tab-content">
+            <div class="panel">
+                <div class="section-head"><h2>Eisenhower matrix</h2></div>
+                <div id="matrixDisplay" class="matrix-grid"></div>
+            </div>
+        </section>
+
+        <section id="focusTab" class="tab-content">
+            <div class="focus-shell">
+                <div class="panel">
+                    <div class="section-head"><h2>Focus mode</h2></div>
+                    <div class="stack">
+                        <div>
+                            <label for="focusTaskSelect">Task</label>
+                            <select id="focusTaskSelect"></select>
+                        </div>
+                        <div class="timer" id="focusTimer">25:00</div>
+                        <div class="action-row">
+                            <button id="enterFocus" type="button">Set focus task</button>
+                            <button id="startPomodoro" type="button">Start</button>
+                            <button id="pausePomodoro" class="secondary" type="button">Pause</button>
+                            <button id="resetPomodoro" class="ghost" type="button">Reset</button>
+                            <button id="finishFocus" class="secondary" type="button">Mark task done</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="panel">
+                        <div class="section-head"><h3>Current focus</h3><span class="muted" id="focusStatus"></span></div>
+                        <div id="focusTaskCard" class="empty-state">No task</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="settingsTab" class="tab-content">
+            <div class="settings-grid">
+                <div class="stack">
+                    <div class="panel">
+                        <div class="section-head"><h3>Workday</h3></div>
+                        <div class="field-grid">
+                            <div>
+                                <label for="workStart">Start hour</label>
+                                <input id="workStart" type="number" min="0" max="23">
+                            </div>
+                            <div>
+                                <label for="workEnd">End hour</label>
+                                <input id="workEnd" type="number" min="1" max="23">
+                            </div>
+                            <div>
+                                <label for="breakMinutes">Break minutes</label>
+                                <input id="breakMinutes" type="number" min="0" max="60">
+                            </div>
+                            <div>
+                                <label for="focusMinutes">Focus timer minutes</label>
+                                <input id="focusMinutes" type="number" min="5" max="90">
+                            </div>
+                        </div>
+                        <div class="action-row" style="margin-top: 0.85rem;">
+                            <button id="saveHours" type="button">Save settings</button>
+                            <button id="exportCal" class="secondary" type="button">Export schedule as ICS</button>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-head"><h3>Privacy</h3></div>
+                        <div class="stack">
+                            <label class="check-line"><input id="privacyModeInput" type="checkbox"> Hide titles for private tasks and goals on screen</label>
+                            <button id="resetAll" class="danger" type="button">Reset PlanBot data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 
 <script>
-    // ---------- DATA ----------
+    const STORAGE_KEYS = {
+        tasks: "pb_tasks",
+        goals: "pb_goals",
+        settings: "pb_settings"
+    };
+
+    const VALID_TABS = ["today", "tasks", "matrix", "focus", "settings"];
+    const PRIORITY_WEIGHT = { high: 3, med: 2, low: 1 };
+    const COMMAND_HELP = [
+        "add task Review roadmap high 45m due 2026-04-26 15:00",
+        "complete task Review roadmap",
+        "delete task Review roadmap",
+        "focus task Review roadmap",
+        "plan my day",
+        "show goals",
+        "privacy on"
+    ].join("\n");
+
     let tasks = [];
     let goals = [];
-    let settings = {
-        workStart: 8, workEnd: 21, dark: false,
-        streakLastDate: null, streakCount: 0,
-        moodLog: []
-    };
+    let settings = getDefaultSettings();
+    let scheduleState = { items: [], unscheduled: [] };
     let pomodoroInterval = null;
+    let pomodoroSeconds = settings.focusMinutes * 60;
     let currentFocusId = null;
-    let pomodoroSeconds = 1500;
+    let statusTimeout = null;
 
-    // Load from localStorage
-    function loadData() {
-        let savedTasks = localStorage.getItem("pb_tasks");
-        let savedGoals = localStorage.getItem("pb_goals");
-        let savedSettings = localStorage.getItem("pb_settings");
-        if(savedTasks) tasks = JSON.parse(savedTasks);
-        if(savedGoals) goals = JSON.parse(savedGoals);
-        if(savedSettings) settings = JSON.parse(savedSettings);
-        if(settings.dark) document.body.classList.add('dark');
-        if(tasks.length === 0 && goals.length === 0) initDemo();
-        updateStreak();
-        applyRecurring();
-        applyOverduePenalty();
-    }
-    function initDemo() {
-        goals = [{ id: "g1", name: "🚀 Career", description: "Learn new skills" }];
-        let due = new Date(); due.setHours(18,0,0);
-        tasks = [{
-            id: "t1", title: "Sample task", priority: "high", estimated: 30,
-            dueDateTime: due.toISOString().slice(0,16), goalId: "g1",
-            completed: false, tags: "#demo", repeat: null, completedAt: null
-        }];
-        saveAll();
-    }
-    function saveAll() {
-        localStorage.setItem("pb_tasks", JSON.stringify(tasks));
-        localStorage.setItem("pb_goals", JSON.stringify(goals));
-        localStorage.setItem("pb_settings", JSON.stringify(settings));
-        renderAll();
-    }
-    function updateStreak() {
-        let today = new Date().toDateString();
-        if(settings.streakLastDate === today) return;
-        let yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-        if(settings.streakLastDate === yesterday.toDateString()) settings.streakCount++;
-        else settings.streakCount = 1;
-        settings.streakLastDate = today;
-        saveAll();
-    }
-    function applyRecurring() {
-        let now = new Date();
-        tasks.forEach(t => {
-            if(t.repeat && !t.completed && t.dueDateTime && new Date(t.dueDateTime) < now) {
-                let newDue = new Date(t.dueDateTime);
-                if(t.repeat === 'daily') newDue.setDate(newDue.getDate()+1);
-                if(t.repeat === 'weekly') newDue.setDate(newDue.getDate()+7);
-                if(newDue > now) {
-                    let newTask = { ...t, id: crypto.randomUUID(), completed: false, completedAt: null, dueDateTime: newDue.toISOString().slice(0,16) };
-                    tasks.push(newTask);
-                }
-            }
-        });
-        saveAll();
-    }
-    function applyOverduePenalty() {
-        let now = new Date();
-        tasks.forEach(t => {
-            if(!t.completed && t.dueDateTime && (now - new Date(t.dueDateTime)) > 2*86400000 && t.priority !== 'high')
-                t.priority = 'high';
-        });
+    function getDefaultSettings() {
+        return {
+            version: 2,
+            workStart: 8,
+            workEnd: 21,
+            breakMinutes: 10,
+            focusMinutes: 25,
+            dark: false,
+            privacyMode: false,
+            activeTab: "today",
+            streakLastCompletionDate: null,
+            streakCount: 0,
+            moodLog: [],
+            todaySelected: []
+        };
     }
 
-    // Auto-select tasks for today
-    function autoSelectTaskIds() {
-        let now = new Date();
-        return tasks.filter(t => !t.completed && ( (t.dueDateTime && new Date(t.dueDateTime) <= new Date(now.getTime()+86400000)) || t.priority === 'high' )).map(t => t.id);
-    }
-
-    // ---------- RENDER FUNCTIONS ----------
-    function renderAll() {
-        renderTodaySelector();
-        renderTasksAndGoals();
-        renderEisenhower();
-        renderFocusSelect();
-        renderReminders();
-        renderSchedule(false);
-        renderStreakAndProgress();
-        document.getElementById("thinkerMsg").innerText = `${tasks.filter(t=>!t.completed).length} pending tasks`;
-        let goalSelect = document.getElementById("taskGoalSelect");
-        if(goalSelect) goalSelect.innerHTML = `<option value="">None</option>` + goals.map(g=>`<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
-    }
-    function renderTodaySelector() {
-        let container = document.getElementById("todayTaskList");
-        if(!container) return;
-        let incomplete = tasks.filter(t=>!t.completed);
-        if(incomplete.length === 0) { container.innerHTML = "<em>No pending tasks</em>"; return; }
-        let selected = new Set(JSON.parse(sessionStorage.getItem("todaySelected")||"[]"));
-        container.innerHTML = incomplete.map(t => `
-            <div class="task-item priority-${t.priority}">
-                <div><strong>${escapeHtml(t.title)}</strong> (${t.estimated}min) ${t.tags||''}</div>
-                <label><input type="checkbox" class="selTask" data-id="${t.id}" ${selected.has(t.id)?'checked':''}> Include</label>
-            </div>
-        `).join('');
-        document.querySelectorAll('.selTask').forEach(cb => cb.addEventListener('change', () => {
-            let newSel = Array.from(document.querySelectorAll('.selTask:checked')).map(c=>c.dataset.id);
-            sessionStorage.setItem("todaySelected", JSON.stringify(newSel));
-        }));
-    }
-    function renderSchedule(gen=true) {
-        let selectedIds = Array.from(document.querySelectorAll('.selTask:checked')).map(c=>c.dataset.id);
-        if(!gen || selectedIds.length === 0) return;
-        let selectedTasks = tasks.filter(t => selectedIds.includes(t.id) && !t.completed);
-        selectedTasks.sort((a,b)=> (a.priority==='high'?-1:1));
-        let now = new Date(), slot = new Date(now);
-        let workStart = new Date(now); workStart.setHours(settings.workStart,0,0);
-        let workEnd = new Date(now); workEnd.setHours(settings.workEnd,0,0);
-        if(slot < workStart) slot = workStart;
-        let html = "";
-        for(let t of selectedTasks) {
-            let end = new Date(slot.getTime() + (t.estimated||30)*60000);
-            if(end > workEnd) html += `<div>⚠️ ${escapeHtml(t.title)} beyond work hours</div>`;
-            else {
-                html += `<div class="schedule-slot"><span>${escapeHtml(t.title)} ${slot.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} → ${end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><button class="completeSched" data-id="${t.id}">✔️</button></div>`;
-                slot = new Date(end.getTime() + 10*60000);
-            }
+    function uid() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
         }
-        document.getElementById("scheduleList").innerHTML = html;
-        document.querySelectorAll('.completeSched').forEach(btn => btn.addEventListener('click', (e) => {
-            let id = btn.dataset.id;
-            let task = tasks.find(t=>t.id===id);
-            if(task) { task.completed=true; task.completedAt=new Date().toISOString(); saveAll(); addChatMsg(`✅ Completed ${task.title}`); }
-        }));
+        return "pb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
     }
-    function renderTasksAndGoals() {
-        let goalsDiv = document.getElementById("goalsContainer");
-        if(goalsDiv) {
-            goalsDiv.innerHTML = goals.map(g => {
-                let rel = tasks.filter(t=>t.goalId===g.id);
-                let done = rel.filter(t=>t.completed).length;
-                let percent = rel.length ? (done/rel.length)*100 : 0;
-                return `<div class="goal-item"><div><strong>${escapeHtml(g.name)}</strong><div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div><small>${g.description||''}</small></div><button class="delGoal" data-id="${g.id}">🗑️</button></div>`;
-            }).join('');
-            document.querySelectorAll('.delGoal').forEach(btn => btn.addEventListener('click',()=>{
-                goals = goals.filter(g=>g.id!==btn.dataset.id);
-                tasks.forEach(t=>{ if(t.goalId===btn.dataset.id) t.goalId=null; });
-                saveAll();
-            }));
-        }
-        let tasksDiv = document.getElementById("tasksContainer");
-        if(tasksDiv) {
-            tasksDiv.innerHTML = tasks.map(t => `
-                <div class="task-item priority-${t.priority} ${t.completed?'completed':''}">
-                    <div><strong>${escapeHtml(t.title)}</strong> ${t.tags||''}<br><small>📅 ${t.dueDateTime?new Date(t.dueDateTime).toLocaleString():'flexible'} | ⏱️ ${t.estimated}min</small></div>
-                    <div><button class="completeTask" data-id="${t.id}">✔️</button> <button class="deleteTask" data-id="${t.id}">🗑️</button></div>
-                </div>
-            `).join('');
-            document.querySelectorAll('.completeTask').forEach(btn => btn.addEventListener('click',()=>{
-                let t = tasks.find(t=>t.id===btn.dataset.id);
-                if(t) { t.completed=true; t.completedAt=new Date().toISOString(); saveAll(); }
-            }));
-            document.querySelectorAll('.deleteTask').forEach(btn => btn.addEventListener('click',()=>{
-                tasks = tasks.filter(t=>t.id!==btn.dataset.id);
-                saveAll();
-            }));
+
+    function safeParse(raw, fallback) {
+        if (!raw) return fallback;
+        try {
+            return JSON.parse(raw);
+        } catch (error) {
+            return fallback;
         }
     }
-    function renderEisenhower() {
-        let now = new Date();
-        let urgentImportant = tasks.filter(t=>!t.completed && t.priority==='high' && t.dueDateTime && new Date(t.dueDateTime) < new Date(now.getTime()+86400000));
-        let notUrgentImportant = tasks.filter(t=>!t.completed && t.priority==='high' && (!t.dueDateTime || new Date(t.dueDateTime) >= new Date(now.getTime()+86400000)));
-        let urgentNotImportant = tasks.filter(t=>!t.completed && t.priority!=='high' && t.dueDateTime && new Date(t.dueDateTime) < new Date(now.getTime()+86400000));
-        let neither = tasks.filter(t=>!t.completed && t.priority!=='high' && (!t.dueDateTime || new Date(t.dueDateTime) >= new Date(now.getTime()+86400000)));
-        document.getElementById("matrixDisplay").innerHTML = `<div class="grid-2">
-            <div><strong>Urgent & Important</strong><br>${urgentImportant.map(t=>t.title).join(', ')||'None'}</div>
-            <div><strong>Not Urgent & Important</strong><br>${notUrgentImportant.map(t=>t.title).join(', ')||'None'}</div>
-            <div><strong>Urgent & Not Important</strong><br>${urgentNotImportant.map(t=>t.title).join(', ')||'None'}</div>
-            <div><strong>Neither</strong><br>${neither.map(t=>t.title).join(', ')||'None'}</div>
-        </div>`;
-    }
-    function renderFocusSelect() {
-        let sel = document.getElementById("focusTaskSelect");
-        if(sel) sel.innerHTML = tasks.filter(t=>!t.completed).map(t=>`<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
-    }
-    function renderReminders() {
-        let now = new Date();
-        let upcoming = tasks.filter(t=>!t.completed && t.dueDateTime && new Date(t.dueDateTime) > now && new Date(t.dueDateTime) < new Date(now.getTime()+3600000)).map(t=>`🔔 ${t.title} due soon`);
-        document.getElementById("reminderArea").innerHTML = upcoming.length ? upcoming.join('<br>') : "✅ No immediate reminders";
-    }
-    function renderStreakAndProgress() {
-        document.getElementById("streakArea").innerHTML = `🔥 Streak: ${settings.streakCount} days`;
-        let progress = goals.map(g => {
-            let total = tasks.filter(t=>t.goalId===g.id).length;
-            let done = tasks.filter(t=>t.goalId===g.id && t.completed).length;
-            return `<div><strong>${escapeHtml(g.name)}</strong> ${done}/${total}</div>`;
-        }).join('');
-        document.getElementById("goalProgress").innerHTML = progress || "No goals yet";
+
+    function clampNumber(value, min, max, fallback) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return fallback;
+        return Math.min(max, Math.max(min, Math.round(num)));
     }
 
-    // Chat helpers
-    function addChatMsg(msg) {
-        let chatDiv = document.getElementById("chatMsgs");
-        let m = document.createElement("div"); m.className = "message bot-msg"; m.innerHTML = msg;
-        chatDiv.appendChild(m); chatDiv.scrollTop = chatDiv.scrollHeight;
+    function cleanText(value) {
+        if (typeof value !== "string") return "";
+        return value.replace(/\s+/g, " ").trim();
     }
-    function processCommand(cmd) {
-        let low = cmd.toLowerCase();
-        if(low.startsWith("add task")) {
-            let rest = cmd.substring(8).trim();
-            let title = rest;
-            let priority = "med";
-            let due = "";
-            let tags = "";
-            if(rest.match(/high|medium|low/i)) { let m = rest.match(/\b(high|medium|low)\b/i); if(m){ priority=m[0].toLowerCase()==='medium'?'med':m[0].toLowerCase(); title=title.replace(m[0],''); } }
-            let dueMatch = rest.match(/due\s+(.+?)(?:\s+#|\s+$|$)/i);
-            if(dueMatch) {
-                let d = new Date(dueMatch[1]);
-                if(!isNaN(d)) due = d.toISOString().slice(0,16);
-                title = title.replace(dueMatch[0],'');
-            }
-            let tagMatch = rest.match(/#\w+/g);
-            if(tagMatch) tags = tagMatch.join(' ');
-            title = title.replace(/\s+/g,' ').trim();
-            if(!title) { addChatMsg("❌ No title"); return; }
-            tasks.push({ id: crypto.randomUUID(), title, priority, estimated:30, dueDateTime:due, tags, completed:false, repeat:null, goalId:null, completedAt:null });
-            saveAll();
-            addChatMsg(`✅ Task "${title}" added`);
-        } else if(low.startsWith("complete task")) {
-            let name = cmd.substring(13).trim().toLowerCase();
-            let found = tasks.find(t=>t.title.toLowerCase().includes(name) && !t.completed);
-            if(found) { found.completed=true; found.completedAt=new Date().toISOString(); saveAll(); addChatMsg(`✔️ Completed "${found.title}"`); }
-            else addChatMsg(`No pending task matching "${name}"`);
-        } else if(low.startsWith("delete task")) {
-            let name = cmd.substring(11).trim().toLowerCase();
-            let idx = tasks.findIndex(t=>t.title.toLowerCase().includes(name));
-            if(idx!==-1) { tasks.splice(idx,1); saveAll(); addChatMsg(`Deleted task`); }
-            else addChatMsg(`Not found`);
-        } else if(low === "plan my day") {
-            let auto = autoSelectTaskIds();
-            sessionStorage.setItem("todaySelected", JSON.stringify(auto));
-            renderAll();
-            renderSchedule(true);
-            addChatMsg(`Auto-planned ${auto.length} tasks`);
-        } else if(low === "show goals") {
-            addChatMsg(goals.map(g=>`• ${g.name}`).join('\n') || "No goals");
+
+    function pad(num) {
+        return String(num).padStart(2, "0");
+    }
+
+    function toLocalInputValue(date) {
+        return [
+            date.getFullYear(),
+            pad(date.getMonth() + 1),
+            pad(date.getDate())
+        ].join("-") + "T" + [pad(date.getHours()), pad(date.getMinutes())].join(":");
+    }
+
+    function parseDateValue(value) {
+        if (!value) return null;
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed;
+    }
+
+    function combineDateAndTime(dateValue, timeValue) {
+        const safeDate = cleanText(dateValue);
+        const safeTime = cleanText(timeValue);
+        if (!safeDate) return "";
+        const combined = new Date(`${safeDate}T${safeTime || "09:00"}`);
+        if (Number.isNaN(combined.getTime())) return "";
+        return toLocalInputValue(combined);
+    }
+
+    function getSuggestedTimeValue() {
+        const next = new Date();
+        const remainder = next.getMinutes() % 5;
+        if (remainder) {
+            next.setMinutes(next.getMinutes() + (5 - remainder));
+        }
+        next.setSeconds(0, 0);
+        return `${pad(next.getHours())}:${pad(next.getMinutes())}`;
+    }
+
+    function openPicker(input, fallbackValue = "") {
+        if (!input) return;
+        if (!input.value && fallbackValue) {
+            input.value = fallbackValue;
+        }
+        if (typeof input.showPicker === "function") {
+            input.showPicker();
         } else {
-            addChatMsg(`Commands: add task ..., complete task ..., delete task ..., plan my day, show goals`);
-        }
-        renderAll();
-    }
-    function sendChatMessage() {
-        let inp = document.getElementById("chatInput");
-        let msg = inp.value.trim();
-        if(!msg) return;
-        let chatDiv = document.getElementById("chatMsgs");
-        let userDiv = document.createElement("div"); userDiv.className = "message user-msg"; userDiv.innerText = msg;
-        chatDiv.appendChild(userDiv);
-        inp.value = "";
-        processCommand(msg);
-    }
-
-    // ---------- EVENT LISTENERS ----------
-    function bindEvents() {
-        document.getElementById("darkToggle")?.addEventListener("click",()=>{
-            document.body.classList.toggle("dark");
-            settings.dark = document.body.classList.contains("dark");
-            saveAll();
-        });
-        document.getElementById("exportData")?.addEventListener("click",()=>{
-            let data = {tasks, goals, settings};
-            let a = document.createElement("a");
-            a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:"application/json"}));
-            a.download = "planbot_backup.json";
-            a.click();
-        });
-        document.getElementById("importData")?.addEventListener("click",()=>{
-            let input = document.createElement("input");
-            input.type = "file";
-            input.onchange = e => {
-                let file = e.target.files[0];
-                let reader = new FileReader();
-                reader.onload = ev => {
-                    let data = JSON.parse(ev.target.result);
-                    tasks = data.tasks; goals = data.goals; settings = data.settings;
-                    saveAll();
-                    addChatMsg("Data imported");
-                };
-                reader.readAsText(file);
-            };
+            input.focus();
             input.click();
-        });
-        document.getElementById("autoPlan")?.addEventListener("click",()=>{
-            let auto = autoSelectTaskIds();
-            sessionStorage.setItem("todaySelected", JSON.stringify(auto));
-            renderAll();
-            renderSchedule(true);
-        });
-        document.getElementById("genSchedule")?.addEventListener("click",()=>renderSchedule(true));
-        document.getElementById("clearGoals")?.addEventListener("click",()=>{ goals=[]; tasks.forEach(t=>t.goalId=null); saveAll(); });
-        document.getElementById("clearTasks")?.addEventListener("click",()=>{ tasks=[]; saveAll(); });
-        document.getElementById("addTaskBtn")?.addEventListener("click",()=>{
-            let title = document.getElementById("taskTitle").value.trim();
-            if(!title) return;
-            tasks.push({
-                id: crypto.randomUUID(), title, tags: document.getElementById("taskTags").value,
-                priority: document.getElementById("taskPriority").value,
-                estimated: parseInt(document.getElementById("taskEst").value) || 30,
-                dueDateTime: document.getElementById("taskDue").value,
-                repeat: document.getElementById("taskRepeat").value,
-                goalId: document.getElementById("taskGoalSelect").value || null,
-                completed: false, completedAt: null
-            });
-            saveAll();
-            document.getElementById("taskTitle").value = "";
-            addChatMsg(`➕ Task "${title}" added`);
-        });
-        document.getElementById("addGoalBtn")?.addEventListener("click",()=>{
-            let name = document.getElementById("goalName").value.trim();
-            if(!name) return;
-            goals.push({ id: crypto.randomUUID(), name, description: document.getElementById("goalDesc").value });
-            saveAll();
-            document.getElementById("goalName").value = "";
-            addChatMsg(`✨ Goal "${name}" created`);
-        });
-        document.getElementById("logMood")?.addEventListener("click",()=>{
-            let val = parseInt(document.getElementById("moodVal").value);
-            if(val>=1 && val<=5) {
-                settings.moodLog.push({date: new Date().toISOString(), value: val});
-                saveAll();
-                addChatMsg(`Mood logged: ${val}/5`);
-            }
-        });
-        document.getElementById("saveHours")?.addEventListener("click",()=>{
-            settings.workStart = parseInt(document.getElementById("workStart").value);
-            settings.workEnd = parseInt(document.getElementById("workEnd").value);
-            saveAll();
-        });
-        document.getElementById("resetAll")?.addEventListener("click",()=>{
-            if(confirm("Delete all data?")) { localStorage.clear(); location.reload(); }
-        });
-        document.getElementById("exportCal")?.addEventListener("click",()=>{
-            let selected = Array.from(document.querySelectorAll('.selTask:checked')).map(c=>c.dataset.id);
-            let todayTasks = tasks.filter(t=>selected.includes(t.id) && !t.completed);
-            let ics = "BEGIN:VCALENDAR\nVERSION:2.0\n";
-            todayTasks.forEach(t=>{
-                let start = new Date(); start.setHours(settings.workStart,0,0);
-                let end = new Date(start.getTime() + (t.estimated||30)*60000);
-                ics += `BEGIN:VEVENT\nSUMMARY:${t.title}\nDTSTART:${start.toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTEND:${end.toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nEND:VEVENT\n`;
-            });
-            ics += "END:VCALENDAR";
-            let blob = new Blob([ics], {type:"text/calendar"});
-            let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "plan.ics"; a.click();
-        });
-        document.getElementById("enterFocus")?.addEventListener("click",()=>{
-            currentFocusId = document.getElementById("focusTaskSelect").value;
-            document.getElementById("focusTimer").innerText = "25:00";
-        });
-        document.getElementById("startPomodoro")?.addEventListener("click",()=>{
-            if(pomodoroInterval) clearInterval(pomodoroInterval);
-            pomodoroSeconds = 1500;
-            let timerDiv = document.getElementById("focusTimer");
-            pomodoroInterval = setInterval(()=>{
-                if(pomodoroSeconds <= 0) { clearInterval(pomodoroInterval); alert("Pomodoro done!"); }
-                else {
-                    pomodoroSeconds--;
-                    let mins = Math.floor(pomodoroSeconds/60);
-                    let secs = pomodoroSeconds%60;
-                    timerDiv.innerText = `${mins}:${secs<10?'0'+secs:secs}`;
-                }
-            },1000);
-        });
-        document.getElementById("voiceDone")?.addEventListener("click",()=>{
-            if(currentFocusId) {
-                let t = tasks.find(t=>t.id===currentFocusId);
-                if(t) { t.completed=true; t.completedAt=new Date().toISOString(); saveAll(); addChatMsg(`✅ Voice completed ${t.title}`); }
-            }
-        });
-        document.getElementById("exitFocus")?.addEventListener("click",()=>{
-            if(pomodoroInterval) clearInterval(pomodoroInterval);
-            currentFocusId = null;
-            document.getElementById("focusTimer").innerText = "25:00";
-        });
-        document.getElementById("sendChat")?.addEventListener("click",sendChatMessage);
-        document.getElementById("chatInput")?.addEventListener("keypress",e=>{if(e.key==="Enter")sendChatMessage();});
-        document.getElementById("chatIcon")?.addEventListener("click",()=>document.getElementById("chatWin").classList.toggle("open"));
-        document.getElementById("closeChat")?.addEventListener("click",()=>document.getElementById("chatWin").classList.remove("open"));
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(SpeechRec) {
-            let rec = new SpeechRec(); rec.continuous=false; rec.lang="en-US";
-            document.getElementById("voiceChat")?.addEventListener("click",()=>rec.start());
-            rec.onresult = (e) => { document.getElementById("chatInput").value = e.results[0][0].transcript; sendChatMessage(); };
         }
-        // Tab switching
+    }
+
+    function parseLooseDate(text) {
+        const input = cleanText(text);
+        if (!input) return null;
+
+        const direct = new Date(input.replace(/^(\d{4}-\d{2}-\d{2})\s+/, "$1T"));
+        if (!Number.isNaN(direct.getTime())) return direct;
+
+        const relativeMatch = input.match(/^(today|tomorrow)(?:\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?$/i);
+        if (relativeMatch) {
+            const base = new Date();
+            if (relativeMatch[1].toLowerCase() === "tomorrow") {
+                base.setDate(base.getDate() + 1);
+            }
+            let hour = relativeMatch[2] ? Number(relativeMatch[2]) : 9;
+            const minute = relativeMatch[3] ? Number(relativeMatch[3]) : 0;
+            const meridiem = relativeMatch[4] ? relativeMatch[4].toLowerCase() : "";
+            if (meridiem === "pm" && hour < 12) hour += 12;
+            if (meridiem === "am" && hour === 12) hour = 0;
+            base.setHours(hour, minute, 0, 0);
+            return base;
+        }
+
+        return null;
+    }
+
+    function getLocalDayKey(date = new Date()) {
+        return [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())].join("-");
+    }
+
+    function normalizeTask(raw = {}) {
+        const priority = raw.priority === "high" || raw.priority === "low" || raw.priority === "med"
+            ? raw.priority
+            : raw.priority === "medium"
+                ? "med"
+                : "med";
+        const due = parseDateValue(raw.dueDateTime);
+        const completedAt = parseDateValue(raw.completedAt);
+
+        return {
+            id: cleanText(raw.id) || uid(),
+            title: cleanText(raw.title) || "Untitled task",
+            tags: cleanText(raw.tags),
+            priority,
+            estimated: clampNumber(raw.estimated, 5, 480, 30),
+            dueDateTime: due ? toLocalInputValue(due) : "",
+            repeat: raw.repeat === "daily" || raw.repeat === "weekly" ? raw.repeat : "",
+            goalId: cleanText(raw.goalId) || null,
+            completed: Boolean(raw.completed),
+            completedAt: completedAt ? completedAt.toISOString() : null,
+            private: Boolean(raw.private)
+        };
+    }
+
+    function normalizeGoal(raw = {}) {
+        return {
+            id: cleanText(raw.id) || uid(),
+            name: cleanText(raw.name) || "Untitled goal",
+            description: cleanText(raw.description),
+            private: Boolean(raw.private)
+        };
+    }
+
+    function normalizeMoodEntry(raw) {
+        const value = clampNumber(raw && raw.value, 1, 5, NaN);
+        const date = parseDateValue(raw && raw.date);
+        if (!Number.isFinite(value) || !date) return null;
+        return { value, date: date.toISOString() };
+    }
+
+    function normalizeSettings(raw = {}) {
+        const defaults = getDefaultSettings();
+        const merged = {
+            ...defaults,
+            ...raw
+        };
+
+        merged.workStart = clampNumber(merged.workStart, 0, 22, defaults.workStart);
+        merged.workEnd = clampNumber(merged.workEnd, 1, 23, defaults.workEnd);
+        if (merged.workEnd <= merged.workStart) {
+            merged.workEnd = Math.min(23, merged.workStart + 8);
+        }
+        merged.breakMinutes = clampNumber(merged.breakMinutes, 0, 60, defaults.breakMinutes);
+        merged.focusMinutes = clampNumber(merged.focusMinutes, 5, 90, defaults.focusMinutes);
+        merged.dark = Boolean(merged.dark);
+        merged.privacyMode = Boolean(merged.privacyMode);
+        merged.activeTab = VALID_TABS.includes(merged.activeTab) ? merged.activeTab : defaults.activeTab;
+        merged.streakLastCompletionDate = typeof merged.streakLastCompletionDate === "string" ? merged.streakLastCompletionDate : null;
+        merged.streakCount = clampNumber(merged.streakCount, 0, 9999, 0);
+        merged.todaySelected = Array.isArray(merged.todaySelected) ? [...new Set(merged.todaySelected.filter(value => typeof value === "string" && value))] : [];
+        merged.moodLog = Array.isArray(merged.moodLog)
+            ? merged.moodLog.map(normalizeMoodEntry).filter(Boolean).slice(-90)
+            : [];
+
+        return merged;
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[character]));
+    }
+
+    function persistState() {
+        try {
+            localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks));
+            localStorage.setItem(STORAGE_KEYS.goals, JSON.stringify(goals));
+            localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+        } catch (error) {
+            showStatus("Could not save locally in this browser.", "error");
+        }
+    }
+
+    function cleanupSelections() {
+        const validIds = new Set(tasks.filter(task => !task.completed).map(task => task.id));
+        settings.todaySelected = settings.todaySelected.filter(id => validIds.has(id));
+        if (currentFocusId && !validIds.has(currentFocusId)) {
+            currentFocusId = null;
+            stopPomodoro(true);
+        }
+    }
+
+    function loadData() {
+        const storedTasks = safeParse(localStorage.getItem(STORAGE_KEYS.tasks), []);
+        const storedGoals = safeParse(localStorage.getItem(STORAGE_KEYS.goals), []);
+        const storedSettings = safeParse(localStorage.getItem(STORAGE_KEYS.settings), {});
+
+        tasks = Array.isArray(storedTasks) ? storedTasks.map(normalizeTask) : [];
+        goals = Array.isArray(storedGoals) ? storedGoals.map(normalizeGoal) : [];
+        settings = normalizeSettings(storedSettings);
+        cleanupSelections();
+        pomodoroSeconds = settings.focusMinutes * 60;
+        applyTheme();
+        syncSettingsInputs();
+    }
+
+    function saveAll(options = {}) {
+        cleanupSelections();
+        persistState();
+        if (options.render !== false) {
+            renderAll();
+        }
+        if (options.message) {
+            showStatus(options.message, options.kind || "success");
+        }
+    }
+
+    function showStatus(message, kind = "quiet") {
+        const statusText = document.getElementById("statusText");
+        const statusBar = document.getElementById("statusBar");
+        if (!statusText || !statusBar) return;
+        statusText.textContent = message;
+        statusBar.dataset.kind = kind;
+        clearTimeout(statusTimeout);
+        if (kind !== "quiet") {
+            statusTimeout = setTimeout(() => {
+                statusText.textContent = "Ready";
+                statusBar.dataset.kind = "quiet";
+            }, 3200);
+        }
+    }
+
+    function applyTheme() {
+        document.body.classList.toggle("dark", settings.dark);
+    }
+
+    function syncSettingsInputs() {
+        const workStart = document.getElementById("workStart");
+        const workEnd = document.getElementById("workEnd");
+        const breakMinutes = document.getElementById("breakMinutes");
+        const focusMinutes = document.getElementById("focusMinutes");
+        const privacyModeInput = document.getElementById("privacyModeInput");
+        const darkToggle = document.getElementById("darkToggle");
+        const privacyToggle = document.getElementById("privacyToggle");
+
+        if (workStart) workStart.value = String(settings.workStart);
+        if (workEnd) workEnd.value = String(settings.workEnd);
+        if (breakMinutes) breakMinutes.value = String(settings.breakMinutes);
+        if (focusMinutes) focusMinutes.value = String(settings.focusMinutes);
+        if (privacyModeInput) privacyModeInput.checked = settings.privacyMode;
+        if (darkToggle) darkToggle.textContent = settings.dark ? "Switch to light" : "Switch to dark";
+        if (privacyToggle) privacyToggle.textContent = settings.privacyMode ? "Privacy on" : "Privacy off";
+    }
+
+    function isPhoneView() {
+        return window.matchMedia("(max-width: 720px)").matches;
+    }
+
+    function setKeyboardMode(enabled) {
+        document.body.classList.toggle("keyboard-open", Boolean(enabled) && isPhoneView());
+    }
+
+    function switchTab(tabName, persist = true) {
+        const safeTab = VALID_TABS.includes(tabName) ? tabName : "today";
         document.querySelectorAll(".tab").forEach(tab => {
-            tab.addEventListener("click",()=>{
-                document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-                tab.classList.add("active");
-                document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
-                document.getElementById(tab.dataset.tab+"Tab").classList.add("active");
-                if(tab.dataset.tab === "focus") renderFocusSelect();
-                if(tab.dataset.tab === "today") renderSchedule(true);
+            tab.classList.toggle("active", tab.dataset.tab === safeTab);
+            if (tab.dataset.tab === safeTab) tab.setAttribute("aria-current", "page");
+            else tab.removeAttribute("aria-current");
+        });
+        document.querySelectorAll(".tab-content").forEach(panel => {
+            panel.classList.toggle("active", panel.id === safeTab + "Tab");
+        });
+        if (persist) {
+            settings.activeTab = safeTab;
+            persistState();
+        }
+        if (safeTab === "focus") {
+            renderFocusSelect();
+        }
+        if (safeTab === "today") {
+            renderSchedule();
+        }
+        if (isPhoneView()) {
+            window.scrollTo(0, 0);
+        }
+    }
+
+    function displayTaskTitle(task) {
+        if (!task) return "";
+        if (settings.privacyMode && task.private) return "Private task";
+        return task.title;
+    }
+
+    function displayGoalName(goal) {
+        if (!goal) return "No goal";
+        if (settings.privacyMode && goal.private) return "Private goal";
+        return goal.name;
+    }
+
+    function getGoalById(goalId) {
+        return goals.find(goal => goal.id === goalId) || null;
+    }
+
+    function formatDueLabel(task) {
+        const due = parseDateValue(task.dueDateTime);
+        return due ? due.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+    }
+
+    function isOverdue(task) {
+        const due = parseDateValue(task.dueDateTime);
+        return Boolean(!task.completed && due && due.getTime() < Date.now());
+    }
+
+    function isDueWithin(task, hours) {
+        const due = parseDateValue(task.dueDateTime);
+        if (!due || task.completed) return false;
+        const delta = due.getTime() - Date.now();
+        return delta >= 0 && delta <= hours * 60 * 60 * 1000;
+    }
+
+    function getTaskUrgencyScore(task) {
+        let score = PRIORITY_WEIGHT[task.priority] * 120;
+        const due = parseDateValue(task.dueDateTime);
+        const now = Date.now();
+
+        if (task.goalId) score += 18;
+        if (task.private) score += 4;
+
+        if (due) {
+            const diffHours = (due.getTime() - now) / 3600000;
+            if (diffHours <= 0) score += 340;
+            else if (diffHours <= 4) score += 250;
+            else if (diffHours <= 24) score += 160;
+            else if (diffHours <= 72) score += 70;
+        }
+
+        score += Math.max(0, 45 - task.estimated) * 0.8;
+        return score;
+    }
+
+    function compareUrgency(a, b) {
+        const byScore = getTaskUrgencyScore(b) - getTaskUrgencyScore(a);
+        if (byScore !== 0) return byScore;
+
+        const dueA = parseDateValue(a.dueDateTime);
+        const dueB = parseDateValue(b.dueDateTime);
+        if (dueA && dueB) return dueA - dueB;
+        if (dueA) return -1;
+        if (dueB) return 1;
+        return a.title.localeCompare(b.title);
+    }
+
+    function sortTasks(tasksToSort, mode) {
+        const cloned = [...tasksToSort];
+        if (mode === "soonest") {
+            cloned.sort((a, b) => {
+                const dueA = parseDateValue(a.dueDateTime);
+                const dueB = parseDateValue(b.dueDateTime);
+                if (dueA && dueB) return dueA - dueB;
+                if (dueA) return -1;
+                if (dueB) return 1;
+                return compareUrgency(a, b);
+            });
+            return cloned;
+        }
+        if (mode === "longest") {
+            cloned.sort((a, b) => b.estimated - a.estimated || compareUrgency(a, b));
+            return cloned;
+        }
+        cloned.sort(compareUrgency);
+        return cloned;
+    }
+
+    function getPendingTasks() {
+        return tasks.filter(task => !task.completed);
+    }
+
+    function getAvailableMinutesToday() {
+        const now = new Date();
+        const workStart = new Date();
+        const workEnd = new Date();
+        workStart.setHours(settings.workStart, 0, 0, 0);
+        workEnd.setHours(settings.workEnd, 0, 0, 0);
+        const start = new Date(Math.max(now.getTime(), workStart.getTime()));
+        const remaining = Math.floor((workEnd.getTime() - start.getTime()) / 60000);
+        return Math.max(0, remaining);
+    }
+
+    function autoSelectTaskIds() {
+        const pending = sortTasks(getPendingTasks(), "urgency");
+        const availableMinutes = getAvailableMinutesToday();
+        const selected = [];
+        let plannedMinutes = 0;
+
+        pending.forEach(task => {
+            const mustInclude = isOverdue(task) || task.priority === "high" || isDueWithin(task, 24);
+            const nextCost = task.estimated + (selected.length ? settings.breakMinutes : 0);
+            if (mustInclude || selected.length < 3 || plannedMinutes + nextCost <= availableMinutes) {
+                selected.push(task.id);
+                plannedMinutes += nextCost;
+            }
+        });
+
+        return [...new Set(selected)];
+    }
+
+    function buildSchedule(selectedIds) {
+        const selectedTasks = sortTasks(
+            tasks.filter(task => selectedIds.includes(task.id) && !task.completed),
+            "urgency"
+        );
+        const result = { items: [], unscheduled: [] };
+        if (!selectedTasks.length) return result;
+
+        const now = new Date();
+        const workStart = new Date();
+        const workEnd = new Date();
+        workStart.setHours(settings.workStart, 0, 0, 0);
+        workEnd.setHours(settings.workEnd, 0, 0, 0);
+
+        let cursor = new Date(Math.max(now.getTime(), workStart.getTime()));
+
+        selectedTasks.forEach(task => {
+            const start = new Date(cursor);
+            const end = new Date(start.getTime() + task.estimated * 60000);
+            const due = parseDateValue(task.dueDateTime);
+
+            if (start.getTime() >= workEnd.getTime() || end.getTime() > workEnd.getTime()) {
+                result.unscheduled.push({
+                    task,
+                    reason: "Outside work hours"
+                });
+                return;
+            }
+
+            let status = "On track";
+            let kind = "success";
+            if (due) {
+                if (due.getTime() < start.getTime()) {
+                    status = "Already late";
+                    kind = "danger";
+                } else if (due.getTime() < end.getTime()) {
+                    status = "At risk";
+                    kind = "warn";
+                } else if (due.getTime() - end.getTime() <= 2 * 3600000) {
+                    status = "Due soon";
+                    kind = "warn";
+                }
+            }
+
+            result.items.push({
+                task,
+                start,
+                end,
+                status,
+                kind
+            });
+
+            cursor = new Date(end.getTime() + settings.breakMinutes * 60000);
+        });
+
+        return result;
+    }
+
+    function updateCompletionStreak(completedAt = new Date()) {
+        const today = getLocalDayKey(completedAt);
+        if (settings.streakLastCompletionDate === today) return;
+
+        const yesterday = new Date(completedAt);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayKey = getLocalDayKey(yesterday);
+
+        if (settings.streakLastCompletionDate === yesterdayKey) {
+            settings.streakCount += 1;
+        } else {
+            settings.streakCount = 1;
+        }
+        settings.streakLastCompletionDate = today;
+    }
+
+    function createNextRecurringTask(task) {
+        if (!task.repeat || !task.dueDateTime) return;
+
+        const due = parseDateValue(task.dueDateTime);
+        if (!due) return;
+
+        const nextDue = new Date(due);
+        do {
+            if (task.repeat === "daily") nextDue.setDate(nextDue.getDate() + 1);
+            if (task.repeat === "weekly") nextDue.setDate(nextDue.getDate() + 7);
+        } while (nextDue.getTime() <= Date.now());
+
+        const nextDueValue = toLocalInputValue(nextDue);
+        const alreadyExists = tasks.some(existing =>
+            !existing.completed &&
+            existing.title === task.title &&
+            existing.goalId === task.goalId &&
+            existing.repeat === task.repeat &&
+            existing.dueDateTime === nextDueValue
+        );
+
+        if (!alreadyExists) {
+            tasks.push(normalizeTask({
+                ...task,
+                id: uid(),
+                completed: false,
+                completedAt: null,
+                dueDateTime: nextDueValue
+            }));
+        }
+    }
+
+    function completeTask(taskId, source = "task list") {
+        const task = tasks.find(item => item.id === taskId);
+        if (!task || task.completed) return;
+
+        task.completed = true;
+        task.completedAt = new Date().toISOString();
+        updateCompletionStreak(new Date(task.completedAt));
+        createNextRecurringTask(task);
+        settings.todaySelected = settings.todaySelected.filter(id => id !== task.id);
+        if (currentFocusId === task.id) {
+            currentFocusId = null;
+            stopPomodoro(true);
+        }
+        saveAll({
+            message: `Completed ${settings.privacyMode && task.private ? "a private task" : '"' + task.title + '"'}`,
+            kind: "success"
+        });
+        appendCommandMessage(`Completed from ${source}: ${task.title}`, "bot");
+    }
+
+    function reopenTask(taskId) {
+        const task = tasks.find(item => item.id === taskId);
+        if (!task || !task.completed) return;
+        task.completed = false;
+        task.completedAt = null;
+        saveAll({ message: "Task reopened.", kind: "success" });
+    }
+
+    function deleteTask(taskId) {
+        const task = tasks.find(item => item.id === taskId);
+        if (!task) return;
+        tasks = tasks.filter(item => item.id !== taskId);
+        settings.todaySelected = settings.todaySelected.filter(id => id !== taskId);
+        if (currentFocusId === taskId) {
+            currentFocusId = null;
+            stopPomodoro(true);
+        }
+        saveAll({
+            message: settings.privacyMode && task.private ? "Deleted a private task." : `Deleted "${task.title}".`,
+            kind: "success"
+        });
+    }
+
+    function deleteGoal(goalId) {
+        const goal = goals.find(item => item.id === goalId);
+        if (!goal) return;
+        goals = goals.filter(item => item.id !== goalId);
+        tasks = tasks.map(task => task.goalId === goalId ? { ...task, goalId: null } : task);
+        saveAll({
+            message: settings.privacyMode && goal.private ? "Deleted a private goal." : `Deleted "${goal.name}".`,
+            kind: "success"
+        });
+    }
+
+    function addTask(taskInput) {
+        const title = cleanText(taskInput.title);
+        if (!title) {
+            showStatus("Task title is required.", "error");
+            return false;
+        }
+
+        const due = taskInput.dueDateTime ? parseDateValue(taskInput.dueDateTime) : null;
+        const task = normalizeTask({
+            id: uid(),
+            title,
+            tags: cleanText(taskInput.tags),
+            priority: taskInput.priority,
+            estimated: taskInput.estimated,
+            dueDateTime: due ? toLocalInputValue(due) : "",
+            repeat: taskInput.repeat,
+            goalId: taskInput.goalId || null,
+            private: Boolean(taskInput.private)
+        });
+
+        tasks.push(task);
+        saveAll({
+            message: task.private && settings.privacyMode ? "Private task created." : `Task "${task.title}" created.`,
+            kind: "success"
+        });
+        return task;
+    }
+
+    function addGoal(goalInput) {
+        const name = cleanText(goalInput.name);
+        if (!name) {
+            showStatus("Goal name is required.", "error");
+            return false;
+        }
+
+        const goal = normalizeGoal({
+            id: uid(),
+            name,
+            description: cleanText(goalInput.description),
+            private: Boolean(goalInput.private)
+        });
+        goals.push(goal);
+        saveAll({
+            message: goal.private && settings.privacyMode ? "Private goal created." : `Goal "${goal.name}" created.`,
+            kind: "success"
+        });
+        return goal;
+    }
+
+    function renderSummary() {
+        const pending = getPendingTasks();
+        const overdue = pending.filter(isOverdue);
+        scheduleState = buildSchedule(settings.todaySelected);
+
+        document.getElementById("pendingMetric").textContent = String(pending.length);
+        document.getElementById("selectedMetric").textContent = String(settings.todaySelected.length);
+        document.getElementById("overdueMetric").textContent = String(overdue.length);
+        document.getElementById("streakMetric").textContent = settings.streakCount ? `${settings.streakCount}d` : "0";
+
+        const selectedMinutes = settings.todaySelected
+            .map(id => tasks.find(task => task.id === id))
+            .filter(Boolean)
+            .reduce((sum, task) => sum + task.estimated, 0);
+
+        const availableMinutes = getAvailableMinutesToday();
+        const focusCandidate = sortTasks(pending, "urgency")[0];
+        const summaryParts = [];
+        summaryParts.push(`${pending.length} task${pending.length === 1 ? "" : "s"}`);
+        if (overdue.length) summaryParts.push(`${overdue.length} overdue`);
+        if (selectedMinutes) summaryParts.push(`${selectedMinutes} min`);
+        summaryParts.push(`${availableMinutes} left`);
+        if (focusCandidate) {
+            summaryParts.push(settings.privacyMode && focusCandidate.private ? "private first" : focusCandidate.title);
+        }
+        document.getElementById("thinkerMsg").textContent = summaryParts.join(" | ");
+        document.getElementById("selectionInfo").textContent = settings.todaySelected.length
+            ? `${settings.todaySelected.length} selected`
+            : "";
+        document.getElementById("scheduleSummary").textContent = scheduleState.items.length
+            ? `${scheduleState.items.length} scheduled`
+            : "";
+
+        syncSettingsInputs();
+    }
+
+    function renderTodaySelector() {
+        const container = document.getElementById("todayTaskList");
+        const pending = sortTasks(getPendingTasks(), "urgency");
+
+        if (!pending.length) {
+            container.innerHTML = `<div class="empty-state">No tasks</div>`;
+            return;
+        }
+
+        container.innerHTML = pending.map(task => {
+            const goal = getGoalById(task.goalId);
+            const badges = [
+                `<span class="badge primary">${task.priority === "med" ? "medium" : task.priority}</span>`,
+                `<span class="badge">${task.estimated} min</span>`
+            ];
+            if (task.repeat) badges.push(`<span class="badge">${escapeHtml(task.repeat)}</span>`);
+            if (task.private) badges.push(`<span class="badge">${settings.privacyMode ? "masked" : "private"}</span>`);
+            if (isOverdue(task)) badges.push(`<span class="badge danger">overdue</span>`);
+            else if (isDueWithin(task, 24)) badges.push(`<span class="badge warn">due soon</span>`);
+
+            const goalLabel = goal ? `Goal: ${escapeHtml(displayGoalName(goal))}` : "No goal";
+            const checked = settings.todaySelected.includes(task.id) ? "checked" : "";
+
+            return `
+                <div class="task-row priority-${task.priority}">
+                    <div class="task-main">
+                        <div class="task-title">
+                            <strong>${escapeHtml(displayTaskTitle(task))}</strong>
+                            ${badges.join("")}
+                        </div>
+                        <div class="task-meta">
+                            ${escapeHtml(formatDueLabel(task))} | ${escapeHtml(goalLabel)}${task.tags ? " | " + escapeHtml(task.tags) : ""}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <label class="check-line"><input type="checkbox" class="selTask" data-id="${task.id}" ${checked}> Today</label>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        document.querySelectorAll(".selTask").forEach(checkbox => {
+            checkbox.addEventListener("change", event => {
+                const taskId = event.target.dataset.id;
+                if (event.target.checked) {
+                    settings.todaySelected = [...new Set([...settings.todaySelected, taskId])];
+                } else {
+                    settings.todaySelected = settings.todaySelected.filter(id => id !== taskId);
+                }
+                persistState();
+                renderSummary();
+                renderSchedule();
             });
         });
     }
 
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+    function renderSchedule() {
+        const container = document.getElementById("scheduleList");
+        scheduleState = buildSchedule(settings.todaySelected);
+
+        if (!settings.todaySelected.length) {
+            container.innerHTML = `<div class="empty-state">Select tasks</div>`;
+            return;
+        }
+
+        if (!scheduleState.items.length && !scheduleState.unscheduled.length) {
+            container.innerHTML = `<div class="empty-state">No schedule</div>`;
+            return;
+        }
+
+        const scheduledHtml = scheduleState.items.map(item => {
+            const task = item.task;
+            const goal = getGoalById(task.goalId);
+            const goalText = goal ? ` | Goal: ${escapeHtml(displayGoalName(goal))}` : "";
+            return `
+                <div class="schedule-row priority-${task.priority}">
+                    <div class="schedule-main">
+                        <div class="schedule-title">
+                            <strong>${escapeHtml(displayTaskTitle(task))}</strong>
+                            <span class="badge ${item.kind}">${escapeHtml(item.status)}</span>
+                        </div>
+                        <div class="schedule-meta">
+                            ${escapeHtml(item.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))} - ${escapeHtml(item.end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))} | ${task.estimated} min${goalText}
+                        </div>
+                    </div>
+                    <div class="schedule-actions">
+                        <button type="button" class="secondary exportSchedItem" data-id="${task.id}">Calendar</button>
+                        <button type="button" class="secondary focusFromSchedule" data-id="${task.id}">Focus</button>
+                        <button type="button" class="completeSched" data-id="${task.id}">Done</button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        const unscheduledHtml = scheduleState.unscheduled.map(item => `
+            <div class="schedule-warning">${escapeHtml(displayTaskTitle(item.task))} could not fit: ${escapeHtml(item.reason)}.</div>
+        `).join("");
+
+        container.innerHTML = scheduledHtml + unscheduledHtml;
+
+        document.querySelectorAll(".completeSched").forEach(button => {
+            button.addEventListener("click", () => completeTask(button.dataset.id, "schedule"));
+        });
+        document.querySelectorAll(".exportSchedItem").forEach(button => {
+            button.addEventListener("click", () => {
+                const item = scheduleState.items.find(entry => entry.task.id === button.dataset.id);
+                if (item) {
+                    exportCalendarItems([item], `planbot-${item.task.id}.ics`);
+                }
+            });
+        });
+        document.querySelectorAll(".focusFromSchedule").forEach(button => {
+            button.addEventListener("click", () => {
+                currentFocusId = button.dataset.id;
+                switchTab("focus");
+                renderFocusSelect();
+                showStatus("Focus task updated from the schedule.", "success");
+            });
+        });
+    }
+
+    function renderTasksAndGoals() {
+        const goalsContainer = document.getElementById("goalsContainer");
+        const tasksContainer = document.getElementById("tasksContainer");
+        const goalOptions = goals.map(goal => `<option value="${goal.id}">${escapeHtml(displayGoalName(goal))}</option>`).join("");
+        document.getElementById("taskGoalSelect").innerHTML = `<option value="">No goal</option>${goalOptions}`;
+
+        if (!goals.length) {
+            goalsContainer.innerHTML = `<div class="empty-state">No goals</div>`;
+        } else {
+            goalsContainer.innerHTML = goals.map(goal => {
+                const related = tasks.filter(task => task.goalId === goal.id);
+                const completed = related.filter(task => task.completed).length;
+                const percent = related.length ? Math.round((completed / related.length) * 100) : 0;
+                return `
+                    <div class="goal-row">
+                        <div class="goal-main">
+                            <div class="goal-title">
+                                <strong>${escapeHtml(displayGoalName(goal))}</strong>
+                                ${goal.private ? `<span class="badge">${settings.privacyMode ? "masked" : "private"}</span>` : ""}
+                                <span class="badge">${completed}/${related.length || 0} tasks</span>
+                            </div>
+                            <div class="goal-meta">${escapeHtml(goal.description || "No description yet.")}</div>
+                            <div class="progress"><span style="width:${percent}%"></span></div>
+                        </div>
+                        <div class="task-actions">
+                            <button type="button" class="ghost delGoal" data-id="${goal.id}">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            document.querySelectorAll(".delGoal").forEach(button => {
+                button.addEventListener("click", () => deleteGoal(button.dataset.id));
+            });
+        }
+
+        const filter = document.getElementById("taskFilter").value;
+        const sortMode = document.getElementById("taskSort").value;
+        let visibleTasks = [...tasks];
+
+        if (filter === "pending") visibleTasks = visibleTasks.filter(task => !task.completed);
+        if (filter === "completed") visibleTasks = visibleTasks.filter(task => task.completed);
+        if (filter === "overdue") visibleTasks = visibleTasks.filter(task => isOverdue(task));
+        if (filter === "private") visibleTasks = visibleTasks.filter(task => task.private);
+
+        visibleTasks = sortTasks(visibleTasks, sortMode);
+
+        if (!visibleTasks.length) {
+            tasksContainer.innerHTML = `<div class="empty-state">No tasks</div>`;
+            return;
+        }
+
+        tasksContainer.innerHTML = visibleTasks.map(task => {
+            const goal = getGoalById(task.goalId);
+            const badges = [
+                `<span class="badge primary">${task.priority === "med" ? "medium" : task.priority}</span>`,
+                `<span class="badge">${task.estimated} min</span>`
+            ];
+            if (task.private) badges.push(`<span class="badge">${settings.privacyMode ? "masked" : "private"}</span>`);
+            if (task.repeat) badges.push(`<span class="badge">${escapeHtml(task.repeat)}</span>`);
+            if (task.completed) badges.push(`<span class="badge success">done</span>`);
+            else if (isOverdue(task)) badges.push(`<span class="badge danger">overdue</span>`);
+            else if (isDueWithin(task, 24)) badges.push(`<span class="badge warn">due soon</span>`);
+
+            const goalText = goal ? `Goal: ${displayGoalName(goal)}` : "No goal";
+            const completeButton = task.completed
+                ? `<button type="button" class="secondary reopenTask" data-id="${task.id}">Reopen</button>`
+                : `<button type="button" class="completeTask" data-id="${task.id}">Done</button>`;
+
+            return `
+                <div class="task-row priority-${task.priority} ${task.completed ? "completed" : ""}">
+                    <div class="task-main">
+                        <div class="task-title">
+                            <strong>${escapeHtml(displayTaskTitle(task))}</strong>
+                            ${badges.join("")}
+                        </div>
+                        <div class="task-meta">
+                            ${escapeHtml(formatDueLabel(task))} | ${escapeHtml(goalText)}${task.tags ? " | " + escapeHtml(task.tags) : ""}${task.completedAt ? " | Completed " + escapeHtml(new Date(task.completedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })) : ""}
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        ${completeButton}
+                        <button type="button" class="ghost deleteTask" data-id="${task.id}">Delete</button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        document.querySelectorAll(".completeTask").forEach(button => {
+            button.addEventListener("click", () => completeTask(button.dataset.id, "task list"));
+        });
+        document.querySelectorAll(".reopenTask").forEach(button => {
+            button.addEventListener("click", () => reopenTask(button.dataset.id));
+        });
+        document.querySelectorAll(".deleteTask").forEach(button => {
+            button.addEventListener("click", () => deleteTask(button.dataset.id));
+        });
+    }
+
+    function renderReminders() {
+        const container = document.getElementById("reminderArea");
+        const pending = getPendingTasks();
+        const reminders = [];
+
+        const overdue = sortTasks(pending.filter(isOverdue), "urgency").slice(0, 3);
+        const dueSoon = sortTasks(pending.filter(task => !isOverdue(task) && isDueWithin(task, 4)), "soonest").slice(0, 3);
+
+        overdue.forEach(task => {
+            reminders.push(`<div class="schedule-warning">${escapeHtml(displayTaskTitle(task))} is overdue and should probably move to the front of the day.</div>`);
+        });
+        dueSoon.forEach(task => {
+            reminders.push(`<div class="empty-state">${escapeHtml(displayTaskTitle(task))} is due within the next four hours.</div>`);
+        });
+
+        if (!reminders.length) {
+            container.innerHTML = `<div class="empty-state">No reminders</div>`;
+            return;
+        }
+
+        container.innerHTML = reminders.join("");
+    }
+
+    function renderStreakAndProgress() {
+        const streakArea = document.getElementById("streakArea");
+        const goalProgress = document.getElementById("goalProgress");
+
+        streakArea.textContent = settings.streakCount
+            ? `Streak: ${settings.streakCount} day${settings.streakCount === 1 ? "" : "s"}`
+            : "Streak: 0";
+
+        if (!goals.length) {
+            goalProgress.innerHTML = `<div class="empty-state">No goals</div>`;
+            return;
+        }
+
+        goalProgress.innerHTML = goals.map(goal => {
+            const related = tasks.filter(task => task.goalId === goal.id);
+            const done = related.filter(task => task.completed).length;
+            const percent = related.length ? Math.round((done / related.length) * 100) : 0;
+            return `
+                <div class="goal-row">
+                    <div class="goal-main">
+                        <div class="goal-title">
+                            <strong>${escapeHtml(displayGoalName(goal))}</strong>
+                            <span class="badge">${done}/${related.length || 0}</span>
+                        </div>
+                        <div class="progress"><span style="width:${percent}%"></span></div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function renderMatrix() {
+        const container = document.getElementById("matrixDisplay");
+        const pending = getPendingTasks();
+        const urgentImportant = sortTasks(pending.filter(task => task.priority === "high" && (isOverdue(task) || isDueWithin(task, 24))), "urgency");
+        const notUrgentImportant = sortTasks(pending.filter(task => task.priority === "high" && !isOverdue(task) && !isDueWithin(task, 24)), "urgency");
+        const urgentNotImportant = sortTasks(pending.filter(task => task.priority !== "high" && (isOverdue(task) || isDueWithin(task, 24))), "urgency");
+        const neither = sortTasks(pending.filter(task => task.priority !== "high" && !isOverdue(task) && !isDueWithin(task, 24)), "urgency");
+
+        function quadrant(title, items) {
+            const list = items.length
+                ? `<ul class="matrix-list">${items.map(task => `<li>${escapeHtml(displayTaskTitle(task))}</li>`).join("")}</ul>`
+                : `<div class="empty-state">-</div>`;
+            return `
+                <div class="matrix-box">
+                    <h3>${escapeHtml(title)}</h3>
+                    ${list}
+                </div>
+            `;
+        }
+
+        container.innerHTML =
+            quadrant("Urgent and important", urgentImportant) +
+            quadrant("Important, not urgent", notUrgentImportant) +
+            quadrant("Urgent, lower importance", urgentNotImportant) +
+            quadrant("Neither", neither);
+    }
+
+    function updatePomodoroDisplay() {
+        const minutes = Math.floor(pomodoroSeconds / 60);
+        const seconds = pomodoroSeconds % 60;
+        document.getElementById("focusTimer").textContent = `${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    function stopPomodoro(silent = false) {
+        if (pomodoroInterval) {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+        }
+        if (!silent) {
+            showStatus("Focus timer stopped.", "quiet");
+        }
+    }
+
+    function resetPomodoro(skipRender = false) {
+        stopPomodoro(true);
+        pomodoroSeconds = settings.focusMinutes * 60;
+        updatePomodoroDisplay();
+        if (!skipRender) {
+            renderFocusSelect();
+        }
+    }
+
+    function renderFocusSelect() {
+        const select = document.getElementById("focusTaskSelect");
+        const pending = sortTasks(getPendingTasks(), "urgency");
+
+        if (!pending.length) {
+            select.innerHTML = `<option value="">No pending tasks</option>`;
+            currentFocusId = null;
+            stopPomodoro(true);
+            pomodoroSeconds = settings.focusMinutes * 60;
+            updatePomodoroDisplay();
+            document.getElementById("focusStatus").textContent = "";
+            document.getElementById("focusTaskCard").className = "empty-state";
+            document.getElementById("focusTaskCard").textContent = "No task";
+            return;
+        }
+
+        if (!currentFocusId || !pending.some(task => task.id === currentFocusId)) {
+            currentFocusId = pending[0].id;
+        }
+
+        select.innerHTML = pending.map(task => `
+            <option value="${task.id}" ${task.id === currentFocusId ? "selected" : ""}>${escapeHtml(displayTaskTitle(task))}</option>
+        `).join("");
+
+        const activeTask = tasks.find(task => task.id === currentFocusId);
+        if (!activeTask) return;
+
+        const goal = getGoalById(activeTask.goalId);
+        document.getElementById("focusStatus").textContent = pomodoroInterval ? "Running" : "Ready";
+        document.getElementById("focusTaskCard").className = `task-row priority-${activeTask.priority}`;
+        document.getElementById("focusTaskCard").innerHTML = `
+            <div class="task-main">
+                <div class="task-title">
+                    <strong>${escapeHtml(displayTaskTitle(activeTask))}</strong>
+                    <span class="badge primary">${activeTask.priority === "med" ? "medium" : activeTask.priority}</span>
+                    <span class="badge">${activeTask.estimated} min</span>
+                </div>
+                <div class="task-meta">${escapeHtml(formatDueLabel(activeTask))}${goal ? " | Goal: " + escapeHtml(displayGoalName(goal)) : ""}${activeTask.tags ? " | " + escapeHtml(activeTask.tags) : ""}</div>
+            </div>
+        `;
+        updatePomodoroDisplay();
+    }
+
+    function startPomodoro() {
+        if (!currentFocusId) {
+            showStatus("Choose a focus task first.", "error");
+            return;
+        }
+        if (pomodoroInterval) return;
+
+        pomodoroInterval = setInterval(() => {
+            if (pomodoroSeconds <= 0) {
+                stopPomodoro(true);
+                pomodoroSeconds = 0;
+                updatePomodoroDisplay();
+                document.getElementById("focusStatus").textContent = "Focus block complete.";
+                showStatus("Focus block complete.", "success");
+                return;
+            }
+            pomodoroSeconds -= 1;
+            updatePomodoroDisplay();
+        }, 1000);
+
+        document.getElementById("focusStatus").textContent = "Timer running.";
+        showStatus("Focus timer started.", "success");
+    }
+
+    function renderAll() {
+        renderSummary();
+        renderTodaySelector();
+        renderSchedule();
+        renderTasksAndGoals();
+        renderReminders();
+        renderStreakAndProgress();
+        renderMatrix();
+        renderFocusSelect();
+    }
+
+    function appendCommandMessage(text, sender) {
+        const feed = document.getElementById("chatMsgs");
+        const message = document.createElement("div");
+        message.className = `command-message ${sender}`;
+        message.textContent = text;
+        feed.appendChild(message);
+        feed.scrollTop = feed.scrollHeight;
+    }
+
+    function findTaskByName(query, pendingOnly = false) {
+        const needle = cleanText(query).toLowerCase();
+        if (!needle) return null;
+
+        const pool = tasks.filter(task => !pendingOnly || !task.completed);
+        const ranked = pool
+            .map(task => {
+                const title = task.title.toLowerCase();
+                let score = 0;
+                if (title === needle) score = 3;
+                else if (title.startsWith(needle)) score = 2;
+                else if (title.includes(needle)) score = 1;
+                return { task, score };
+            })
+            .filter(entry => entry.score > 0)
+            .sort((a, b) => b.score - a.score || compareUrgency(a.task, b.task));
+
+        return ranked.length ? ranked[0].task : null;
+    }
+
+    function processAddTaskCommand(rawCommand) {
+        let working = cleanText(rawCommand.slice(8));
+        if (!working) {
+            appendCommandMessage("Task title is missing.", "bot");
+            return;
+        }
+
+        const original = working;
+        const priorityMatch = working.match(/\b(high|medium|low)\b/i);
+        const minutesMatch = working.match(/\b(\d{1,3})\s*(m|min|mins|minute|minutes)\b/i);
+        const repeatMatch = working.match(/\brepeat\s+(daily|weekly)\b/i);
+        const dueMatch = working.match(/\bdue\s+(.+?)(?=\s+(?:#\w+|repeat\b|private\b|\d{1,3}\s*(?:m|min|mins|minute|minutes)\b|high\b|medium\b|low\b)|$)/i);
+        const tagMatch = working.match(/#\w+/g);
+        const privateMatch = /\bprivate\b/i.test(working);
+
+        let priority = "med";
+        let estimated = 30;
+        let repeat = "";
+        let dueDateTime = "";
+        let tags = "";
+
+        if (priorityMatch) {
+            priority = priorityMatch[1].toLowerCase() === "medium" ? "med" : priorityMatch[1].toLowerCase();
+            working = working.replace(priorityMatch[0], " ");
+        }
+        if (minutesMatch) {
+            estimated = clampNumber(minutesMatch[1], 5, 480, 30);
+            working = working.replace(minutesMatch[0], " ");
+        }
+        if (repeatMatch) {
+            repeat = repeatMatch[1].toLowerCase();
+            working = working.replace(repeatMatch[0], " ");
+        }
+        if (dueMatch) {
+            const parsedDue = parseLooseDate(dueMatch[1]);
+            if (!parsedDue) {
+                appendCommandMessage(`Could not read the due date in "${original}". Try YYYY-MM-DD HH:MM or "tomorrow 3pm".`, "bot");
+                return;
+            }
+            dueDateTime = toLocalInputValue(parsedDue);
+            working = working.replace(dueMatch[0], " ");
+        }
+        if (tagMatch) {
+            tags = tagMatch.join(" ");
+            tagMatch.forEach(tag => {
+                working = working.replace(tag, " ");
+            });
+        }
+        if (privateMatch) {
+            working = working.replace(/\bprivate\b/i, " ");
+        }
+
+        const title = cleanText(working);
+        const task = addTask({
+            title,
+            priority,
+            estimated,
+            dueDateTime,
+            repeat,
+            tags,
+            goalId: null,
+            private: privateMatch
+        });
+
+        if (task) {
+            appendCommandMessage(`Task added: ${task.title}`, "bot");
+        }
+    }
+
+    function processCommand(command) {
+        const raw = cleanText(command);
+        const lower = raw.toLowerCase();
+
+        if (!raw) return;
+
+        if (lower === "help") {
+            appendCommandMessage(COMMAND_HELP, "bot");
+            return;
+        }
+
+        if (lower.startsWith("add task")) {
+            processAddTaskCommand(raw);
+            return;
+        }
+
+        if (lower.startsWith("complete task")) {
+            const task = findTaskByName(raw.slice(13), true);
+            if (!task) {
+                appendCommandMessage("No pending task matched that name.", "bot");
+                return;
+            }
+            completeTask(task.id, "quick command");
+            return;
+        }
+
+        if (lower.startsWith("delete task")) {
+            const task = findTaskByName(raw.slice(11), false);
+            if (!task) {
+                appendCommandMessage("No task matched that name.", "bot");
+                return;
+            }
+            deleteTask(task.id);
+            appendCommandMessage(`Deleted task: ${task.title}`, "bot");
+            return;
+        }
+
+        if (lower.startsWith("focus task")) {
+            const task = findTaskByName(raw.slice(10), true);
+            if (!task) {
+                appendCommandMessage("No pending task matched that focus request.", "bot");
+                return;
+            }
+            currentFocusId = task.id;
+            switchTab("focus");
+            renderFocusSelect();
+            appendCommandMessage(`Focus set to: ${task.title}`, "bot");
+            return;
+        }
+
+        if (lower === "plan my day") {
+            settings.todaySelected = autoSelectTaskIds();
+            saveAll({ render: true, message: "Auto-plan updated.", kind: "success" });
+            appendCommandMessage(`Selected ${settings.todaySelected.length} task${settings.todaySelected.length === 1 ? "" : "s"} for today.`, "bot");
+            switchTab("today");
+            return;
+        }
+
+        if (lower === "show goals") {
+            if (!goals.length) {
+                appendCommandMessage("No goals", "bot");
+                return;
+            }
+            appendCommandMessage(goals.map(goal => `- ${displayGoalName(goal)}`).join("\n"), "bot");
+            return;
+        }
+
+        if (lower === "show schedule") {
+            const schedule = buildSchedule(settings.todaySelected);
+            if (!schedule.items.length) {
+                appendCommandMessage("No schedule", "bot");
+                return;
+            }
+            appendCommandMessage(
+                schedule.items.map(item => `${item.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ${displayTaskTitle(item.task)}`).join("\n"),
+                "bot"
+            );
+            return;
+        }
+
+        if (lower === "privacy on") {
+            settings.privacyMode = true;
+            saveAll({ message: "Privacy mode enabled.", kind: "success" });
+            appendCommandMessage("Privacy mode enabled.", "bot");
+            return;
+        }
+
+        if (lower === "privacy off") {
+            settings.privacyMode = false;
+            saveAll({ message: "Privacy mode disabled.", kind: "success" });
+            appendCommandMessage("Privacy mode disabled.", "bot");
+            return;
+        }
+
+        appendCommandMessage('Unknown command. Type "help" to see the local command rules.', "bot");
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById("chatInput");
+        const value = cleanText(input.value);
+        if (!value) return;
+        appendCommandMessage(value, "user");
+        input.value = "";
+        processCommand(value);
+    }
+
+    function downloadText(filename, text, type) {
+        const blob = new Blob([text], { type });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+    }
+
+    function exportData() {
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            version: settings.version,
+            tasks,
+            goals,
+            settings
+        };
+        downloadText("planbot-backup.json", JSON.stringify(payload, null, 2), "application/json");
+        showStatus("Backup exported locally.", "success");
+    }
+
+    function importDataFromText(text) {
+        const parsed = safeParse(text, null);
+        if (!parsed || typeof parsed !== "object") {
+            throw new Error("Invalid JSON");
+        }
+
+        const nextTasks = Array.isArray(parsed.tasks) ? parsed.tasks.map(normalizeTask) : [];
+        const nextGoals = Array.isArray(parsed.goals) ? parsed.goals.map(normalizeGoal) : [];
+        const nextSettings = normalizeSettings(parsed.settings || {});
+
+        tasks = nextTasks;
+        goals = nextGoals;
+        settings = nextSettings;
+        cleanupSelections();
+        applyTheme();
+        resetPomodoro();
+        saveAll({ message: "Backup imported.", kind: "success" });
+    }
+
+    function openImportPicker() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json,.json";
+        input.addEventListener("change", event => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    importDataFromText(String(reader.result || ""));
+                } catch (error) {
+                    showStatus("Import failed. Make sure the file is a valid PlanBot backup.", "error");
+                }
+            };
+            reader.readAsText(file);
+        });
+        input.click();
+    }
+
+    function formatIcsDate(date) {
+        return [
+            date.getUTCFullYear(),
+            pad(date.getUTCMonth() + 1),
+            pad(date.getUTCDate())
+        ].join("") + "T" + [
+            pad(date.getUTCHours()),
+            pad(date.getUTCMinutes()),
+            pad(date.getUTCSeconds())
+        ].join("") + "Z";
+    }
+
+    function escapeIcsText(text) {
+        return String(text).replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\n/g, "\\n");
+    }
+
+    function exportCalendarItems(items, filename = "planbot-schedule.ics") {
+        if (!items.length) {
+            showStatus("No schedule", "error");
+            return;
+        }
+
+        const lines = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//PlanBot//Local Planner//EN"
+        ];
+
+        items.forEach(item => {
+            lines.push("BEGIN:VEVENT");
+            lines.push(`UID:${uid()}@planbot.local`);
+            lines.push(`DTSTAMP:${formatIcsDate(new Date())}`);
+            lines.push(`DTSTART:${formatIcsDate(item.start)}`);
+            lines.push(`DTEND:${formatIcsDate(item.end)}`);
+            lines.push(`SUMMARY:${escapeIcsText(item.task.title)}`);
+            lines.push(`DESCRIPTION:${escapeIcsText(`Priority ${item.task.priority}, status ${item.status}`)}`);
+            lines.push("END:VEVENT");
+        });
+
+        lines.push("END:VCALENDAR");
+        downloadText(filename, lines.join("\r\n"), "text/calendar");
+        showStatus("Calendar exported", "success");
+    }
+
+    function exportCalendar() {
+        const schedule = buildSchedule(settings.todaySelected);
+        exportCalendarItems(schedule.items, "planbot-schedule.ics");
+    }
+
+    function bindEvents() {
+        document.addEventListener("focusin", event => {
+            if (event.target.matches("input, textarea, select")) {
+                setKeyboardMode(true);
+            }
+        });
+
+        document.addEventListener("focusout", event => {
+            if (!event.target.matches("input, textarea, select")) return;
+            window.setTimeout(() => {
+                const active = document.activeElement;
+                const keepOpen = Boolean(active && active.matches && active.matches("input, textarea, select"));
+                setKeyboardMode(keepOpen);
+            }, 0);
+        });
+
+        window.addEventListener("resize", () => {
+            if (!isPhoneView()) {
+                setKeyboardMode(false);
+            }
+        });
+
+        document.getElementById("darkToggle").addEventListener("click", () => {
+            settings.dark = !settings.dark;
+            applyTheme();
+            saveAll({ message: `${settings.dark ? "Dark" : "Light"} theme enabled.`, kind: "success" });
+        });
+
+        document.getElementById("privacyToggle").addEventListener("click", () => {
+            settings.privacyMode = !settings.privacyMode;
+            saveAll({ message: `Privacy mode ${settings.privacyMode ? "enabled" : "disabled"}.`, kind: "success" });
+        });
+
+        document.getElementById("privacyModeInput").addEventListener("change", event => {
+            settings.privacyMode = Boolean(event.target.checked);
+            saveAll({ message: `Privacy mode ${settings.privacyMode ? "enabled" : "disabled"}.`, kind: "success" });
+        });
+
+        document.getElementById("exportData").addEventListener("click", exportData);
+        document.getElementById("importData").addEventListener("click", openImportPicker);
+        document.getElementById("pickDateBtn").addEventListener("click", () => {
+            openPicker(document.getElementById("taskDate"), getLocalDayKey());
+        });
+        document.getElementById("pickTimeBtn").addEventListener("click", () => {
+            openPicker(document.getElementById("taskTime"), getSuggestedTimeValue());
+        });
+
+        document.getElementById("autoPlan").addEventListener("click", () => {
+            settings.todaySelected = autoSelectTaskIds();
+            saveAll({ message: "Auto-plan updated.", kind: "success" });
+        });
+
+        document.getElementById("genSchedule").addEventListener("click", () => {
+            renderSummary();
+            renderSchedule();
+            showStatus("Schedule refreshed.", "success");
+        });
+
+        document.getElementById("clearSelection").addEventListener("click", () => {
+            settings.todaySelected = [];
+            saveAll({ message: "Today selection cleared.", kind: "success" });
+        });
+
+        document.getElementById("addTaskBtn").addEventListener("click", () => {
+            const dueDateTime = combineDateAndTime(
+                document.getElementById("taskDate").value,
+                document.getElementById("taskTime").value
+            );
+            const created = addTask({
+                title: document.getElementById("taskTitle").value,
+                tags: document.getElementById("taskTags").value,
+                priority: document.getElementById("taskPriority").value,
+                estimated: document.getElementById("taskEst").value,
+                dueDateTime,
+                repeat: document.getElementById("taskRepeat").value,
+                goalId: document.getElementById("taskGoalSelect").value,
+                private: document.getElementById("taskPrivate").checked
+            });
+            if (!created) return;
+
+            document.getElementById("taskTitle").value = "";
+            document.getElementById("taskTags").value = "";
+            document.getElementById("taskPriority").value = "med";
+            document.getElementById("taskEst").value = "30";
+            document.getElementById("taskDate").value = "";
+            document.getElementById("taskTime").value = "";
+            document.getElementById("taskRepeat").value = "";
+            document.getElementById("taskGoalSelect").value = "";
+            document.getElementById("taskPrivate").checked = false;
+        });
+
+        document.getElementById("addGoalBtn").addEventListener("click", () => {
+            const created = addGoal({
+                name: document.getElementById("goalName").value,
+                description: document.getElementById("goalDesc").value,
+                private: document.getElementById("goalPrivate").checked
+            });
+            if (!created) return;
+
+            document.getElementById("goalName").value = "";
+            document.getElementById("goalDesc").value = "";
+            document.getElementById("goalPrivate").checked = false;
+        });
+
+        document.getElementById("logMood").addEventListener("click", () => {
+            const value = clampNumber(document.getElementById("moodVal").value, 1, 5, NaN);
+            if (!Number.isFinite(value)) {
+                showStatus("Mood must be between 1 and 5.", "error");
+                return;
+            }
+            settings.moodLog = [...settings.moodLog, { value, date: new Date().toISOString() }].slice(-90);
+            saveAll({ message: `Mood ${value}/5 logged locally.`, kind: "success" });
+            document.getElementById("moodVal").value = "";
+        });
+
+        document.getElementById("saveHours").addEventListener("click", () => {
+            const nextStart = clampNumber(document.getElementById("workStart").value, 0, 22, settings.workStart);
+            const nextEnd = clampNumber(document.getElementById("workEnd").value, 1, 23, settings.workEnd);
+            if (nextEnd <= nextStart) {
+                showStatus("End hour must be after start hour.", "error");
+                return;
+            }
+            settings.workStart = nextStart;
+            settings.workEnd = nextEnd;
+            settings.breakMinutes = clampNumber(document.getElementById("breakMinutes").value, 0, 60, settings.breakMinutes);
+            settings.focusMinutes = clampNumber(document.getElementById("focusMinutes").value, 5, 90, settings.focusMinutes);
+            resetPomodoro();
+            saveAll({ message: "Planner settings updated.", kind: "success" });
+        });
+
+        document.getElementById("clearGoals").addEventListener("click", () => {
+            if (!goals.length) return;
+            if (window.confirm("Delete every goal? Tasks will stay but lose goal links.")) {
+                goals = [];
+                tasks = tasks.map(task => ({ ...task, goalId: null }));
+                saveAll({ message: "All goals deleted.", kind: "success" });
+            }
+        });
+
+        document.getElementById("clearTasks").addEventListener("click", () => {
+            if (!tasks.length) return;
+            if (window.confirm("Delete every task? This cannot be undone from inside the app.")) {
+                tasks = [];
+                settings.todaySelected = [];
+                currentFocusId = null;
+                stopPomodoro(true);
+                saveAll({ message: "All tasks deleted.", kind: "success" });
+            }
+        });
+
+        document.getElementById("resetAll").addEventListener("click", () => {
+            if (!window.confirm("Reset PlanBot data on this device?")) return;
+            localStorage.removeItem(STORAGE_KEYS.tasks);
+            localStorage.removeItem(STORAGE_KEYS.goals);
+            localStorage.removeItem(STORAGE_KEYS.settings);
+            tasks = [];
+            goals = [];
+            settings = getDefaultSettings();
+            currentFocusId = null;
+            applyTheme();
+            resetPomodoro();
+            saveAll({ message: "PlanBot data reset.", kind: "success" });
+            switchTab("today");
+        });
+
+        document.getElementById("exportCal").addEventListener("click", exportCalendar);
+
+        document.getElementById("focusTaskSelect").addEventListener("change", event => {
+            currentFocusId = event.target.value || null;
+            renderFocusSelect();
+        });
+
+        document.getElementById("enterFocus").addEventListener("click", () => {
+            currentFocusId = document.getElementById("focusTaskSelect").value || null;
+            renderFocusSelect();
+            if (currentFocusId) {
+                showStatus("Focus task set.", "success");
+            }
+        });
+
+        document.getElementById("startPomodoro").addEventListener("click", startPomodoro);
+        document.getElementById("pausePomodoro").addEventListener("click", () => {
+            stopPomodoro(true);
+            document.getElementById("focusStatus").textContent = "Timer paused.";
+            showStatus("Focus timer paused.", "success");
+        });
+        document.getElementById("resetPomodoro").addEventListener("click", () => {
+            resetPomodoro();
+            showStatus("Focus timer reset.", "success");
+        });
+        document.getElementById("finishFocus").addEventListener("click", () => {
+            if (!currentFocusId) {
+                showStatus("No focus task selected.", "error");
+                return;
+            }
+            completeTask(currentFocusId, "focus mode");
+        });
+
+        document.getElementById("sendChat").addEventListener("click", sendChatMessage);
+        document.getElementById("chatInput").addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        });
+
+        document.getElementById("taskFilter").addEventListener("change", renderTasksAndGoals);
+        document.getElementById("taskSort").addEventListener("change", renderTasksAndGoals);
+
+        document.querySelectorAll(".tab").forEach(tab => {
+            tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+        });
+    }
 
     loadData();
     bindEvents();
     renderAll();
-    setInterval(()=>{ applyRecurring(); applyOverduePenalty(); renderReminders(); renderStreakAndProgress(); }, 30000);
+    switchTab(settings.activeTab, false);
+    setInterval(() => {
+        renderSummary();
+        renderReminders();
+        renderSchedule();
+        renderFocusSelect();
+    }, 30000);
 </script>
 </body>
 </html>
